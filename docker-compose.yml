@@ -1,0 +1,18 @@
+services:
+  quarterdecklog:
+    build: .
+    image: quarterdecklog:local
+    container_name: quarterdecklog
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-7272}:7272"
+    environment:
+      - PORT=7272
+      - NODE_ENV=production
+      - SESSION_SECRET=${SESSION_SECRET}
+      - DB_PATH=/data/quarterdecklog.db
+    volumes:
+      - quarterdecklog-data:/data
+
+volumes:
+  quarterdecklog-data:
