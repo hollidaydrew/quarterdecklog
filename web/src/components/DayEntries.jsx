@@ -48,7 +48,7 @@ export default function DayEntries({ date, user, backLink, onChanged }) {
   }, [date]);
 
   useEffect(() => {
-    api.get('/api/tags').then(setAllTags);
+    api.get('/api/tags').then(setAllTags).catch(() => {});
   }, []);
 
   const toggleFilter = (id) => {
@@ -136,7 +136,7 @@ export default function DayEntries({ date, user, backLink, onChanged }) {
       </div>
 
       {modalMode && (
-        <Modal onClose={() => setModalMode(null)}>
+        <Modal wide onClose={() => setModalMode(null)}>
           <h3 style={{ marginTop: 0 }}>{modalMode === 'new' ? 'New entry' : 'Edit entry'}</h3>
           <EntryEditor
             initialBody={modalMode === 'new' ? '' : modalMode.body}

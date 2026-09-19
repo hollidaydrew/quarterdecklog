@@ -22,7 +22,7 @@ export default function EntryCard({ entry, canEdit, onEdit, onDelete }) {
           </span>
         )}
       </div>
-      <div className="entry-body" dangerouslySetInnerHTML={{ __html: entry.body }} />
+      <div className="entry-body trix-content" dangerouslySetInnerHTML={{ __html: entry.body }} />
       {entry.tags.length > 0 && (
         <div className="entry-tags">
           {entry.tags.map((tag) => (

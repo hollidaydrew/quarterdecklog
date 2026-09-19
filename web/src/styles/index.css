@@ -10,7 +10,8 @@
   --color-primary-tint: #eef1ff;
   --color-primary-band: rgba(91, 124, 250, 0.14);
   --color-text-faint: #8a92a6;
-  --footer-h: 20px;
+  --footer-h: 40px;
+  --header-h: 57px;
   --radius: 12px;
   --shadow: 0 1px 3px rgba(20, 24, 40, 0.06), 0 1px 2px rgba(20, 24, 40, 0.04);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -20,7 +21,6 @@
 
 body {
   margin: 0;
-  padding-bottom: var(--footer-h);
   background: var(--color-bg);
   color: var(--color-text);
 }
@@ -66,30 +66,39 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
 }
 
 .app-shell {
-  min-height: calc(100vh - var(--footer-h));
-  min-height: calc(100dvh - var(--footer-h));
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-top: var(--header-h);
+  padding-bottom: var(--footer-h);
   display: flex;
   flex-direction: column;
 }
 /* The list view fills the window and scrolls inside its own panes. */
 .app-shell.fill {
-  height: calc(100vh - var(--footer-h));
-  height: calc(100dvh - var(--footer-h));
+  height: 100vh;
+  height: 100dvh;
   min-height: 0;
 }
 
+/* Pinned to the top like the footer; above modals and the menu drawer. */
 .topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: var(--header-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 24px;
+  padding: 0 24px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
 }
 
 .brand { display: inline-flex; line-height: 0; border-radius: 6px; }
 .logo { display: block; height: auto; }
-.auth-logo { align-self: flex-start; margin-bottom: 4px; }
+.auth-logo { align-self: center; margin-bottom: 6px; }
 
 .topbar-right { display: flex; gap: 12px; align-items: center; min-width: 0; }
 .hello {
@@ -139,8 +148,8 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
 }
 
 .auth-screen {
-  min-height: calc(100vh - var(--footer-h));
-  min-height: calc(100dvh - var(--footer-h));
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -260,35 +269,50 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
 }
 .tag-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
 
-/* Editor */
-.editor-toolbar {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--color-border);
+/* Editor (Trix). Attachments are off, so the attach-files button is hidden. */
+.entry-editor .trix-button-group--file-tools { display: none; }
+.entry-editor trix-toolbar { display: block; margin-bottom: 8px; }
+.entry-editor trix-toolbar .trix-button-row { flex-wrap: wrap; gap: 0 10px; }
+.entry-editor trix-toolbar .trix-button-group {
+  margin-bottom: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
 }
-.editor-toolbar button {
+.entry-editor trix-toolbar .trix-button {
   background: transparent;
   color: var(--color-text);
+  border-bottom: none;
+  border-radius: 0;
+}
+.entry-editor trix-toolbar .trix-button:hover:not(:disabled) { background: var(--color-border); }
+.entry-editor trix-toolbar .trix-button.trix-active { background: var(--color-primary-tint); }
+.entry-editor trix-toolbar .trix-button:disabled { opacity: 0.35; cursor: default; }
+.entry-editor trix-toolbar .trix-dialog {
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 24px rgba(20, 24, 40, 0.16);
+}
+.entry-editor trix-toolbar .trix-dialog__link-fields { align-items: center; }
+.entry-editor trix-toolbar .trix-input--dialog { margin: 0 8px 0 0; }
+.entry-editor trix-toolbar .trix-button--dialog {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   padding: 6px 10px;
-  font-weight: 700;
 }
-.editor-toolbar button.active { background: var(--color-primary); color: white; }
-.editor-toolbar button:hover:not(.active) { background: var(--color-border); }
-
-.ProseMirror {
-  min-height: 140px;
+.entry-editor trix-toolbar .trix-button--dialog:hover { background: var(--color-border); }
+.entry-editor trix-editor {
+  min-height: 180px;
+  max-height: 45vh;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   outline: none;
+  line-height: 1.5;
 }
-.ProseMirror p.is-empty:first-child::before {
-  content: attr(data-placeholder);
-  color: var(--color-text-muted);
-  float: left;
-  pointer-events: none;
-  height: 0;
-}
+.entry-editor trix-editor:focus { border-color: var(--color-primary); }
 
 .modal-backdrop {
   position: fixed;
@@ -297,7 +321,7 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: calc(var(--header-h) + 16px) 16px calc(var(--footer-h) + 16px);
   z-index: 50;
 }
 
@@ -307,7 +331,7 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
   padding: 24px;
   width: 100%;
   max-width: 560px;
-  max-height: 90vh;
+  max-height: 100%;
   overflow-y: auto;
 }
 .modal.wide { max-width: 680px; }
@@ -344,7 +368,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   outline-offset: 2px;
 }
 
-/* ---- Footer: always visible, 20px, above everything ---- */
+/* ---- Footer: after sign-in only, 40px, above everything ---- */
 .app-footer {
   position: fixed;
   left: 0;
@@ -358,17 +382,21 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
 }
+/* Only the version text is clickable, and it looks like a link. */
 .app-footer .footer-version {
-  height: 100%;
-  padding: 0 14px;
-  border-radius: 0;
+  padding: 0;
+  border-radius: 4px;
   background: transparent;
   color: var(--color-text-muted);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.4;
 }
-.app-footer .footer-version:hover { background: var(--color-border); color: var(--color-text); }
+.app-footer .footer-version:hover {
+  background: transparent;
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
 
 /* ---- Menu drawer ---- */
 .drawer-backdrop {
@@ -379,7 +407,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 }
 .drawer {
   position: fixed;
-  top: 0;
+  top: var(--header-h);
   right: 0;
   bottom: var(--footer-h);
   z-index: 910;
@@ -600,7 +628,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 
 /* ---- Small screens ---- */
 @media (max-width: 800px) {
-  .topbar { padding: 8px 14px; }
+  .topbar { padding: 0 14px; }
+  .topbar .logo { height: 28px; width: auto; }
   .main-content { padding: 16px 14px; }
   .list-layout { grid-template-columns: minmax(0, 1fr); }
   .list-pane { display: none; }

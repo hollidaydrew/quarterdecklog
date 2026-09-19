@@ -3,6 +3,27 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.3.0] - 2026-09-18
+
+### Changed
+- The entry editor is now Trix. Its toolbar adds a link button, a heading, indent and undo/redo. Web addresses you type are no longer turned into links automatically; use the link button. Inline code and underline are no longer available.
+- Entries written before this release look the same as before. Editing one converts it to the new editor's format.
+- New wordmark logo (SVG) replaces the previous logo.
+- The header stays pinned to the top of the window, like the footer. The menu drawer and pop-ups sit between the two.
+- The footer is taller (40px), and only the version text is the link that opens the release notes.
+- The footer (version and release notes) now appears only after you sign in.
+- Sign-in, setup, sign-up and change-password screens: the logo is centered. The sign-in instruction and the sign-up heading and instruction are gone.
+
+### Fixed
+- Clicking anything after your session has ended now takes you to the login screen instead of showing an error. If an admin resets your password while you are signed in, you are taken to the change-password screen.
+
+### Security
+- Replacing the old editor also clears a Tiptap security advisory that came with it.
+
+### Upgrading from 0.2.0
+- No database changes. Existing entries, users, tags and invites are untouched.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.2.0] - 2026-09-18
 
 ### Added

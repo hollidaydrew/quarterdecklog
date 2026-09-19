@@ -1,6 +1,6 @@
 {
   "name": "quarterdecklog-web",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,12 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tiptap/extension-link": "^2.6.6",
-    "@tiptap/react": "^2.6.6",
-    "@tiptap/starter-kit": "^2.6.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.1"
+    "react-router-dom": "^6.26.1",
+    "trix": "^2.1.19"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

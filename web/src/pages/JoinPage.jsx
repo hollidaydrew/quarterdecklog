@@ -46,7 +46,7 @@ export default function JoinPage({ onDone }) {
     return (
       <div className="auth-screen">
         <div className="auth-card card">
-          <Logo height={56} className="auth-logo" />
+          <Logo className="auth-logo" />
           <p className="error-text">{inviteError}</p>
           <p className="muted">Ask whoever sent you this link to generate a new one.</p>
         </div>
@@ -57,9 +57,7 @@ export default function JoinPage({ onDone }) {
   return (
     <div className="auth-screen">
       <form className="auth-card card" onSubmit={submit}>
-        <Logo height={56} className="auth-logo" />
-        <h2>You're invited</h2>
-        <p className="subtitle">Set up your account to join the log.</p>
+        <Logo className="auth-logo" />
         <input type="text" placeholder="Display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required autoCapitalize="none" />
         <input type="password" placeholder="Password (min. 8 characters)" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />

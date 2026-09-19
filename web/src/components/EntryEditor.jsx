@@ -1,32 +1,47 @@
-import { useEffect, useState } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
+import { useEffect, useId, useRef, useState } from 'react';
+import 'trix';
+import 'trix/dist/trix.css';
 import TagChip from './TagChip.jsx';
 
-function ToolbarButton({ onClick, active, children, title }) {
-  return (
-    <button type="button" title={title} className={active ? 'active' : ''} onMouseDown={(e) => e.preventDefault()} onClick={onClick}>
-      {children}
-    </button>
-  );
+function escapeAttr(value) {
+  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Trix (https://github.com/basecamp/trix) keeps the entry's HTML in a hidden
+// input, so saving just reads that input. The input, toolbar and editor are
+// created once as plain markup that React never re-renders: React would
+// otherwise reset the hidden input's value on every re-render (for example
+// when a tag is clicked) and wipe what was typed.
+//
+// Entries are text-only, so file attachments are switched off: the attach
+// button is hidden with CSS and any dropped or pasted file is refused.
 export default function EntryEditor({ initialBody = '', allTags, initialTagIds = [], onSave, onCancel, saving }) {
   const [selectedTagIds, setSelectedTagIds] = useState(new Set(initialTagIds));
-
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Link.configure({ openOnClick: false, autolink: true }),
-    ],
-    content: initialBody,
-    editorProps: {
-      attributes: { class: 'ProseMirror' },
-    },
+  const uid = useId().replace(/:/g, '');
+  const [markup] = useState(() => {
+    const inputId = `entry-body-${uid}`;
+    const toolbarId = `entry-toolbar-${uid}`;
+    return (
+      `<input id="${inputId}" type="hidden" value="${escapeAttr(initialBody)}">` +
+      `<trix-toolbar id="${toolbarId}"></trix-toolbar>` +
+      `<trix-editor input="${inputId}" toolbar="${toolbarId}" placeholder="Write an entry…"></trix-editor>`
+    );
   });
+  const hostRef = useRef(null);
 
-  useEffect(() => () => editor?.destroy(), [editor]);
+  useEffect(() => {
+    const el = hostRef.current && hostRef.current.querySelector('trix-editor');
+    if (!el) return undefined;
+    const refuseFiles = (e) => e.preventDefault();
+    el.addEventListener('trix-file-accept', refuseFiles);
+    const focusEditor = () => el.focus();
+    if (el.editor) focusEditor();
+    else el.addEventListener('trix-initialize', focusEditor, { once: true });
+    return () => {
+      el.removeEventListener('trix-file-accept', refuseFiles);
+      el.removeEventListener('trix-initialize', focusEditor);
+    };
+  }, []);
 
   const toggleTag = (id) => {
     setSelectedTagIds((prev) => {
@@ -38,26 +53,16 @@ export default function EntryEditor({ initialBody = '', allTags, initialTagIds =
   };
 
   const handleSave = () => {
-    const html = editor.getHTML();
-    if (editor.isEmpty) return;
-    onSave({ body: html, tag_ids: Array.from(selectedTagIds) });
+    const el = hostRef.current && hostRef.current.querySelector('trix-editor');
+    const input = hostRef.current && hostRef.current.querySelector('input[type="hidden"]');
+    if (!el || !el.editor || !input) return;
+    if (el.editor.getDocument().toString().trim() === '') return;
+    onSave({ body: input.value, tag_ids: Array.from(selectedTagIds) });
   };
 
-  if (!editor) return null;
-
   return (
-    <div>
-      <div className="editor-toolbar">
-        <ToolbarButton title="Bold" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>B</ToolbarButton>
-        <ToolbarButton title="Italic" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><em>i</em></ToolbarButton>
-        <ToolbarButton title="Underline strike" active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}>S</ToolbarButton>
-        <ToolbarButton title="Bullet list" active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()}>• List</ToolbarButton>
-        <ToolbarButton title="Numbered list" active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()}>1. List</ToolbarButton>
-        <ToolbarButton title="Quote" active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}>&ldquo;&rdquo;</ToolbarButton>
-        <ToolbarButton title="Code" active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()}>{'</>'}</ToolbarButton>
-      </div>
-
-      <EditorContent editor={editor} />
+    <div className="entry-editor">
+      <div ref={hostRef} dangerouslySetInnerHTML={{ __html: markup }} />
 
       {allTags.length > 0 && (
         <div className="tag-filter-row" style={{ marginTop: 16 }}>

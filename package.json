@@ -1,6 +1,6 @@
 {
   "name": "quarterdecklog",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "A self-hosted digital watch log for teams — a shared, day-based logbook for handoffs and status.",
   "license": "MIT",

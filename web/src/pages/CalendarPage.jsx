@@ -21,7 +21,7 @@ export default function CalendarPage({ user, onViewUsed }) {
   }, []);
 
   useEffect(() => {
-    api.get(`/api/entries/month?year=${year}&month=${month}`).then(setCounts);
+    api.get(`/api/entries/month?year=${year}&month=${month}`).then(setCounts).catch(() => {});
   }, [year, month]);
 
   const changeMonth = (delta) => {

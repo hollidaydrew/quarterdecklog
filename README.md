@@ -2,14 +2,14 @@
 
 A self-hosted, shared digital logbook for teams — inspired by the paper quarterdeck watch log used aboard Navy ships. Log what happened, day by day, so the next person on shift can catch up in a minute instead of digging through chat history.
 
-Click a day on the calendar, see everything that was logged. Write entries in a simple rich-text editor, tag them (bug, incident, FYI, whatever your team needs), and hand off cleanly.
+Click a day on the calendar, see everything that was logged. Write entries in a rich-text editor, tag them (bug, incident, FYI, whatever your team needs), and hand off cleanly.
 
 ## Features
 
 - Single shared team log — everyone sees the same timeline
 - List view: a scrolling list of dates on the left, the selected day's entries on the right, with a single-day or date-range filter
 - Calendar view: click a day, see that day's entries in order
-- WYSIWYG entry editor (bold, lists, quotes, code, links)
+- Rich-text entry editor (bold, italic, strikethrough, links, heading, quotes, code, lists)
 - Admin-managed, color-coded tags; filter a day's entries by tag
 - Invite-link based onboarding — no public signup
 - Admin tools: manage tags, invites and team members (edit, reset password, delete)
@@ -82,7 +82,7 @@ If you find a security issue, please open a private security advisory on GitHub 
 ## Tech stack
 
 - Backend: Node.js, Fastify, better-sqlite3
-- Frontend: React, Vite, Tiptap (WYSIWYG editor)
+- Frontend: React, Vite, [Trix](https://github.com/basecamp/trix) (rich-text editor)
 - Single multi-stage Dockerfile, SQLite on a named Docker volume
 
 ## License

@@ -31,7 +31,7 @@ export default function ChangePasswordPage({ onDone, onLogout }) {
   return (
     <div className="auth-screen">
       <form className="auth-card card" onSubmit={submit}>
-        <Logo height={56} className="auth-logo" />
+        <Logo className="auth-logo" />
         <h2>Choose a new password</h2>
         <p className="subtitle">An admin gave you a temporary password. Enter it once, then choose your own.</p>
         <input type="password" placeholder="Temporary password" value={current} onChange={(e) => setCurrent(e.target.value)} required autoFocus autoComplete="current-password" />
