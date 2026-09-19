@@ -1,25 +1,19 @@
 import TagChip from './TagChip.jsx';
+import { formatDateTimeShort } from '../lib/dates.js';
+import { entryTintClass } from '../lib/easterEggTags.js';
 
-function formatTime(isoOrSqlTimestamp) {
-  // SQLite datetime('now') yields 'YYYY-MM-DD HH:MM:SS' in UTC; normalize to ISO for Date parsing.
-  const iso = isoOrSqlTimestamp.includes('T') ? isoOrSqlTimestamp : isoOrSqlTimestamp.replace(' ', 'T') + 'Z';
-  return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-}
-
-// EASTER EGG (deliberately left out of the User Guide and release notes):
-// an entry that uses a tag named "Incident" (any capitalisation) gets a light
-// orange card via the .entry-incident class in index.css, so it stands out
-// from the other entries on the day.
-const isIncident = (entry) => entry.tags.some((t) => t.name.trim().toLowerCase() === 'incident');
-
-export default function EntryCard({ entry, canEdit, onEdit, onDelete }) {
+// Easter egg tags (see lib/easterEggTags.js, deliberately left out of the User
+// Guide and release notes) can tint a card in the day view, such as the light
+// orange "Incident" card. `plain` turns the tint off, as the special tag pages do.
+export default function EntryCard({ entry, canEdit, onEdit, onDelete, plain = false }) {
+  const tint = plain ? '' : entryTintClass(entry);
   return (
-    <div className={`card entry-card${isIncident(entry) ? ' entry-incident' : ''}`}>
+    <div className={`card entry-card${tint ? ` ${tint}` : ''}`}>
       <div className="entry-meta">
         <span>
           <strong>{entry.author_name}</strong>
           {entry.author_deleted ? <span className="muted"> (deleted user)</span> : null}
-          {' · '}{formatTime(entry.created_at)}
+          {' · '}{formatDateTimeShort(entry.created_at)}
         </span>
         {canEdit && (
           <span>

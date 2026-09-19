@@ -32,6 +32,34 @@ const fastify = Fastify({ logger: true, trustProxy: true });
 
 fastify.decorateRequest('user', null);
 
+// Security headers on every response. The content-security-policy lets the app
+// load only its own scripts, styles, images and data; inline styles are
+// allowed because the editor and saved entries use them. API responses are
+// never cached, since they hold private team data.
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join('; ');
+
+fastify.addHook('onSend', async (request, reply, payload) => {
+  reply.header('Content-Security-Policy', CSP);
+  reply.header('X-Content-Type-Options', 'nosniff');
+  reply.header('X-Frame-Options', 'DENY');
+  reply.header('Referrer-Policy', 'same-origin');
+  reply.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  reply.header('Cross-Origin-Opener-Policy', 'same-origin');
+  if (request.raw.url.startsWith('/api/')) reply.header('Cache-Control', 'no-store');
+  return payload;
+});
+
 await fastify.register(rateLimit, { global: false });
 await fastify.register(cookie);
 await fastify.register(session, {

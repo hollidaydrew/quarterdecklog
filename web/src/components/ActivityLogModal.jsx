@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import Modal from './Modal.jsx';
 import { api } from '../api.js';
-import { formatDateTimeLog, formatDateTimeShort } from '../lib/dates.js';
+import { formatDateTimeLog, formatDateTimeShort, todayStr } from '../lib/dates.js';
+import { activityToCsv, downloadCsv } from '../lib/activityCsv.js';
 
 function TextBlock({ label, value }) {
   return (
@@ -90,6 +91,7 @@ function ActivityRow({ row }) {
 export default function ActivityLogModal({ onClose }) {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback(() => {
     setError('');
@@ -100,17 +102,31 @@ export default function ActivityLogModal({ onClose }) {
     load();
   }, [load]);
 
+  const exportCsv = async () => {
+    setExporting(true);
+    setError('');
+    try {
+      const all = await api.get('/api/activity/export');
+      downloadCsv(`quarterdecklog-activity-${todayStr()}.csv`, activityToCsv(all));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <Modal onClose={onClose} wide closeOnEscape label="Activity log">
       <div className="release-head">
         <h3 style={{ margin: 0 }}>Activity log</h3>
         <span className="row-actions">
+          <button type="button" className="secondary" onClick={exportCsv} disabled={exporting}>{exporting ? 'Exporting…' : 'Export CSV'}</button>
           <button type="button" className="secondary" onClick={load}>Refresh</button>
           <button type="button" className="secondary" onClick={onClose}>Close</button>
         </span>
       </div>
       <p className="muted" style={{ margin: '4px 0 12px' }}>
-        Newest first. Keeps the last 2,500 events. Times are in your local time.
+        Newest first. Keeps the last 5,000 events. Times are in your local time.
       </p>
       {error && <p className="error-text">{error}</p>}
       {rows && rows.length === 0 && <p className="muted">Nothing has been recorded yet.</p>}

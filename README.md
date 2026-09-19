@@ -13,7 +13,7 @@ Click a day on the calendar, see everything that was logged. Write entries in a 
 - Admin-managed, color-coded tags; filter a day's entries by tag
 - Invite-link based onboarding — no public signup
 - Admin tools: manage tags, invites and team members (edit, reset password, delete, last login)
-- Activity log (admins): the last 2,500 events, including entry text and changes
+- Activity log (admins): the last 5,000 events, including entry text and changes, with CSV export
 - My profile (everyone): change your own display name, username and password
 - In-app User Guide, plus release notes and credits
 - Release notes: click the version in the footer, or read [CHANGELOG.md](CHANGELOG.md)
@@ -43,7 +43,8 @@ Pull the latest code and rebuild. Your data lives in the Docker volume and is ke
 
 ```
 git pull
-docker compose up -d --build
+docker compose build --pull
+docker compose up -d
 ```
 
 See [CHANGELOG.md](CHANGELOG.md) for what changed in each version. Everyone is signed out when the container restarts.
@@ -73,8 +74,9 @@ This repo is public, so a few things are worth knowing if you're running your ow
 - Role changes, password resets and deleted accounts take effect immediately, because the signed-in user is re-read from the database on every request.
 - Entry content is sanitized server-side (allow-listed tags/attributes only) before it's stored, to prevent stored XSS from rich-text input.
 - Dependabot and a GitHub Actions secret-scan (gitleaks) run on this repo — see `.github/`.
+- Every response carries browser security headers (content security policy, no framing, no sniffing), and API responses are never cached.
 - Anyone can edit their own display name, username and password, but a request to change a role is refused for everyone except through an admin editing someone else. Entries can only be edited or deleted by their author or an admin (enforced on the server).
-- The activity log is admin-only. It keeps entry text (including text of deleted entries) for up to 2,500 events.
+- The activity log is admin-only. It keeps entry text (including text of deleted entries) for up to 5,000 events.
 
 If you find a security issue, please open a private security advisory on GitHub rather than a public issue.
 
@@ -86,7 +88,7 @@ If you find a security issue, please open a private security advisory on GitHub 
 
 ## Tech stack
 
-- Backend: Node.js, Fastify, better-sqlite3
+- Backend: Node.js 22, Fastify, better-sqlite3
 - Frontend: React, Vite, [Trix](https://github.com/basecamp/trix) (rich-text editor)
 - Single multi-stage Dockerfile, SQLite on a named Docker volume
 

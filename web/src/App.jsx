@@ -8,6 +8,7 @@ import ChangePasswordPage from './pages/ChangePasswordPage.jsx';
 import CalendarPage from './pages/CalendarPage.jsx';
 import ListPage from './pages/ListPage.jsx';
 import DayView from './pages/DayView.jsx';
+import TagPage from './pages/TagPage.jsx';
 import AdminSettings from './pages/AdminSettings.jsx';
 import Logo from './components/Logo.jsx';
 import Footer from './components/Footer.jsx';
@@ -130,6 +131,7 @@ export default function App() {
             <Route path="/list/:date?" element={<ListPage user={user} onViewUsed={rememberView} />} />
             <Route path="/calendar" element={<CalendarPage user={user} onViewUsed={rememberView} />} />
             <Route path="/day/:date" element={<DayView user={user} onViewUsed={rememberView} />} />
+            <Route path="/tag/:slug" element={<TagPage user={user} />} />
             {user.is_admin && (
               <Route path="/admin" element={<AdminSettings currentUser={user} onSelfChanged={refreshStatus} />} />
             )}

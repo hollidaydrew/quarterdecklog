@@ -85,7 +85,7 @@ db.transaction(() => {
   addColumnIfMissing('users', 'last_login_at', 'TEXT');
 })();
 
-// v0.4.0: rolling activity log (newest 2,500 rows are kept, see activity.js)
+// v0.4.0: rolling activity log (newest rows are kept, 5,000 since v0.5.0; see activity.js)
 // and a small key/value table used to notice when the app version changes.
 db.exec(`
   CREATE TABLE IF NOT EXISTS activity_log (

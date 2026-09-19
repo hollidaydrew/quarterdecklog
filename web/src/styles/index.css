@@ -4,11 +4,11 @@
   --color-border: #e4e7ef;
   --color-text: #232838;
   --color-text-muted: #6b7280;
-  --color-primary: #5b7cfa;
-  --color-primary-dark: #4763d4;
+  --color-primary: #647581; /* Haze Gray */
+  --color-primary-dark: #4e5d67;
   --color-danger: #e5484d;
-  --color-primary-tint: #eef1ff;
-  --color-primary-band: rgba(91, 124, 250, 0.14);
+  --color-primary-tint: #eef1f3;
+  --color-primary-band: rgba(100, 117, 129, 0.16);
   --color-text-faint: #8a92a6;
   --footer-h: 40px;
   --header-h: 57px;
@@ -254,6 +254,11 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
   background: #fff1dc;
   border-color: #f3c58a;
 }
+/* Easter-egg tag link under "+ New entry" (see lib/easterEggTags.js). */
+.day-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.egg-link { font-size: 13px; color: var(--color-text-muted); }
+.egg-link:hover { color: var(--color-primary-dark); }
+
 .entry-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
 
 .tag-chip {
@@ -311,6 +316,7 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
 .entry-editor trix-editor {
   min-height: 180px;
   max-height: 45vh;
+  overflow-y: auto; /* long entries scroll inside the box instead of spilling out of it */
   padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -605,7 +611,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 }
 .dp-day:hover { background: var(--color-border); }
 .dp-day.in-band { background: var(--color-primary-band); }
-.dp-day.in-band:hover { background: rgba(91, 124, 250, 0.26); }
+.dp-day.in-band:hover { background: rgba(100, 117, 129, 0.28); }
 .dp-day.is-edge { background: var(--color-primary); color: white; font-weight: 700; border-radius: 8px; }
 .dp-day.band-start { border-radius: 8px 0 0 8px; }
 .dp-day.band-end { border-radius: 0 8px 8px 0; }

@@ -6,6 +6,7 @@ import EntryEditor from './EntryEditor.jsx';
 import TagChip from './TagChip.jsx';
 import Modal from './Modal.jsx';
 import { parseDateStr } from '../lib/dates.js';
+import { activeEasterEggs } from '../lib/easterEggTags.js';
 
 // One day's entries with tag filter and create/edit/delete. Used by the
 // calendar's day page and by the right-hand pane of the list view.
@@ -109,7 +110,12 @@ export default function DayEntries({ date, user, backLink, onChanged }) {
           {backLink && <Link to={backLink.to} className="muted">&larr; {backLink.label}</Link>}
           <h2 style={{ margin: backLink ? '4px 0 0' : 0 }}>{niceDate}</h2>
         </div>
-        <button onClick={() => setModalMode('new')}>+ New entry</button>
+        <div className="day-actions">
+          <button onClick={() => setModalMode('new')}>+ New entry</button>
+          {activeEasterEggs(allTags).map((egg) => (
+            <Link key={egg.slug} to={`/tag/${egg.slug}`} className="egg-link">{egg.label}</Link>
+          ))}
+        </div>
       </div>
 
       {allTags.length > 0 && (
