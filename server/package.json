@@ -15,7 +15,7 @@
     "argon2": "^0.40.3",
     "better-sqlite3": "^11.3.0",
     "fastify": "^5.12.5",
-    "nanoid": "^5.0.7",
+    "nanoid": "^6.0.1",
     "sanitize-html": "^2.13.1"
   }
 }
