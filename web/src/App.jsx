@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
-import { api } from './api.js';
+import { api, onSessionProblem } from './api.js';
 import SetupPage from './pages/SetupPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import JoinPage from './pages/JoinPage.jsx';
@@ -28,6 +28,24 @@ export default function App() {
   useEffect(() => {
     refreshStatus();
   }, [refreshStatus]);
+
+  // Any request that finds the session gone re-checks who is signed in, which
+  // shows the login screen (or the change-password screen if an admin has just
+  // issued a temporary password).
+  useEffect(
+    () =>
+      onSessionProblem(() => {
+        setMenuOpen(false);
+        api
+          .get('/api/auth/status')
+          .then((s) => {
+            setStatus(s);
+            if (!s.user) navigate('/login');
+          })
+          .catch(() => {});
+      }),
+    [navigate]
+  );
 
   // Saves the last view (list or calendar) on the account so the logo returns
   // to it, and mirrors it locally so no extra status request is needed.
@@ -70,7 +88,7 @@ export default function App() {
       <div className={`app-shell${isList ? ' fill' : ''}`}>
         <header className="topbar">
           <Link to="/" className="brand" aria-label="QuarterDeckLog, back to your log">
-            <Logo height={36} />
+            <Logo />
           </Link>
           <div className="topbar-right">
             <span className="hello">Hello, {user.display_name}</span>
@@ -79,7 +97,7 @@ export default function App() {
               className="icon-button"
               aria-label="Open menu"
               aria-expanded={menuOpen}
-              onClick={() => setMenuOpen(true)}
+              onClick={() => setMenuOpen((open) => !open)}
             >
               <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
                 <path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -100,14 +118,10 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
+        <Footer />
       </div>
     );
   }
 
-  return (
-    <>
-      {content}
-      <Footer />
-    </>
-  );
+  return content;
 }

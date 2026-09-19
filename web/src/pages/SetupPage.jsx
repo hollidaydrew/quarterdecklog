@@ -31,7 +31,7 @@ export default function SetupPage({ onDone }) {
   return (
     <div className="auth-screen">
       <form className="auth-card card" onSubmit={submit}>
-        <Logo height={56} className="auth-logo" />
+        <Logo className="auth-logo" />
         <h2>Welcome</h2>
         <p className="subtitle">This is a fresh install. Create the first admin account to get started.</p>
         <input type="text" placeholder="Display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />

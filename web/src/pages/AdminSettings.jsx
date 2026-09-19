@@ -10,7 +10,7 @@ function TagManager() {
   const [color, setColor] = useState('#5B7CFA');
   const [error, setError] = useState('');
 
-  const load = () => api.get('/api/tags').then(setTags);
+  const load = () => api.get('/api/tags').then(setTags).catch(() => {});
   useEffect(() => { load(); }, []);
 
   const addTag = async (e) => {
@@ -218,7 +218,7 @@ function UserRoster({ currentUser, onSelfChanged }) {
   const [tempPassword, setTempPassword] = useState(null); // { name, password }
   const [error, setError] = useState('');
 
-  const load = useCallback(() => api.get('/api/users').then(setUsers), []);
+  const load = useCallback(() => api.get('/api/users').then(setUsers).catch(() => {}), []);
   useEffect(() => { load(); }, [load]);
 
   const deleteUser = async (u) => {

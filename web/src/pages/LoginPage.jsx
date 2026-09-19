@@ -25,8 +25,7 @@ export default function LoginPage({ onDone }) {
   return (
     <div className="auth-screen">
       <form className="auth-card card" onSubmit={submit}>
-        <Logo height={56} className="auth-logo" />
-        <p className="subtitle">Sign in to the log.</p>
+        <Logo className="auth-logo" />
         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required autoCapitalize="none" autoFocus />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         {error && <p className="error-text">{error}</p>}

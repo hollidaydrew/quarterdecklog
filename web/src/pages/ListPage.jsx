@@ -33,7 +33,7 @@ export default function ListPage({ user, onViewUsed }) {
   }, []);
 
   const loadCounts = useCallback(() => {
-    return api.get(`/api/entries/range?from=${from}&to=${to}`).then(setCounts);
+    return api.get(`/api/entries/range?from=${from}&to=${to}`).then(setCounts).catch(() => {});
   }, [from, to]);
 
   useEffect(() => {

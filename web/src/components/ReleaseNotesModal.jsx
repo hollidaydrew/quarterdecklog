@@ -7,7 +7,7 @@ export default function ReleaseNotesModal({ onClose }) {
   return (
     <Modal onClose={onClose} wide closeOnEscape label="Release notes">
       <div className="release-head">
-        <Logo height={36} />
+        <Logo />
         <button type="button" className="secondary" onClick={onClose}>Close</button>
       </div>
       <h2 className="release-title">Release notes</h2>
