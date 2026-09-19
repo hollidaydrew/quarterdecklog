@@ -3,6 +3,32 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.5.0] - 2026-09-18
+
+### Added
+- Export CSV button in the Activity log (admins only). It downloads every event the log holds as a spreadsheet file, with the date and time in your local time, who did it, what happened, and the entry text and changes.
+- Favicon and app icons: the QuarterDeckLog icon now shows in browser tabs, on an iPhone or iPad home screen, and when the app is installed on Android.
+
+### Changed
+- Each entry card now shows the full date and time it was written, such as 09-18-2026 8:37 PM, in your local time. Before, it showed only the time.
+- Buttons and the shading on the selected day are now Haze Gray instead of blue.
+- The Activity log now keeps the last 5,000 events, up from 2,500.
+
+### Fixed
+- Entry editor: when an entry ran longer than the text box, the cursor and the last lines spilled out of the bottom of the box. Long entries now scroll inside the box.
+
+### Security
+- React Router is updated to clear a security advisory (an open redirect in links and navigation).
+- Vite, the build tool, is updated to clear a security advisory in its development server. The app you run was not affected.
+- Fastify and its static file plugin are updated to their latest patch releases.
+- The Docker image now runs Node.js 22, because Node.js 20 no longer receives security updates.
+- The app now sends browser security headers: a content security policy, protection against being shown inside another site, and no caching of private data.
+
+### Upgrading from 0.4.0
+- Your data is kept. No database changes.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`, so the new Node.js base image is downloaded.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.4.0] - 2026-09-18
 
 ### Added

@@ -8,7 +8,7 @@ export const APP_VERSION = pkg.version;
 
 // Only the newest MAX_ACTIVITY rows are kept; older rows are deleted as new
 // ones are written.
-export const MAX_ACTIVITY = 2500;
+export const MAX_ACTIVITY = 5000;
 const MAX_SNAPSHOT_CHARS = 10000;
 
 // "2026-09-18" -> "09-18-2026"

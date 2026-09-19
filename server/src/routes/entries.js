@@ -4,6 +4,9 @@ import { sanitizeEntryBody } from '../utils/sanitize.js';
 import { isValidDateString, isValidYearMonth } from '../utils/date.js';
 import { htmlToText, logActivity, usDate } from '../activity.js';
 
+// Most entries the by-tag page returns; keep in step with LIMIT in web/src/pages/TagPage.jsx.
+const BY_TAG_LIMIT = 1000;
+
 function attachTags(entry) {
   const tags = db
     .prepare(
@@ -85,6 +88,31 @@ export default async function entryRoutes(fastify) {
          ORDER BY entries.created_at ASC`
       )
       .all(date);
+    return rows.map(attachTags);
+  });
+
+  // Every entry that uses the named tag (case-insensitive), newest first. Used
+  // by the easter egg tag pages (see web/src/lib/easterEggTags.js).
+  fastify.get('/api/entries/by-tag', { preHandler: requireAuth }, async (request, reply) => {
+    const name = typeof request.query.name === 'string' ? request.query.name.trim().toLowerCase() : '';
+    if (!name || name.length > 100) {
+      return reply.code(400).send({ error: 'A tag name is required' });
+    }
+    const rows = db
+      .prepare(
+        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
+                (users.deleted_at IS NOT NULL) AS author_deleted
+         FROM entries
+         JOIN users ON users.id = entries.author_id
+         WHERE entries.id IN (
+           SELECT entry_tags.entry_id FROM entry_tags
+           JOIN tags ON tags.id = entry_tags.tag_id
+           WHERE lower(trim(tags.name)) = ?
+         )
+         ORDER BY entries.entry_date DESC, entries.created_at DESC, entries.id DESC
+         LIMIT ?`
+      )
+      .all(name, BY_TAG_LIMIT);
     return rows.map(attachTags);
   });
 
