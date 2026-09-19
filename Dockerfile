@@ -1,5 +1,5 @@
 # --- Stage 1: build the React frontend ---
-FROM node:22-bookworm-slim AS web-build
+FROM node:25-bookworm-slim AS web-build
 WORKDIR /app/web
 COPY web/package*.json ./
 RUN npm install
@@ -11,7 +11,7 @@ RUN npm run build
 # vite.config.js outputs to ../server/public relative to /app/web, i.e. /app/server/public
 
 # --- Stage 2: install backend dependencies (better-sqlite3 needs a native build) ---
-FROM node:22-bookworm-slim AS server-build
+FROM node:25-bookworm-slim AS server-build
 WORKDIR /app/server
 RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
     && rm -rf /var/lib/apt/lists/*
@@ -19,7 +19,7 @@ COPY server/package*.json ./
 RUN npm install --omit=dev
 
 # --- Stage 3: runtime image ---
-FROM node:22-bookworm-slim
+FROM node:25-bookworm-slim
 WORKDIR /app/server
 ENV NODE_ENV=production
 
