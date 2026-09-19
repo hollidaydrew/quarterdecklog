@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function MenuDrawer({ user, onClose, onLogout }) {
+export default function MenuDrawer({ user, onClose, onLogout, onOpenProfile, onOpenGuide, onOpenActivity }) {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose();
@@ -23,14 +23,21 @@ export default function MenuDrawer({ user, onClose, onLogout }) {
           </button>
         </div>
         <nav className="drawer-nav">
+          <button type="button" className="drawer-link" onClick={onOpenProfile}>My profile</button>
+          <button type="button" className="drawer-link" onClick={onOpenGuide}>User Guide</button>
+          {user.is_admin && (
+            <button type="button" className="drawer-link" onClick={onOpenActivity}>Activity log</button>
+          )}
           {user.is_admin && (
             <Link to="/admin" onClick={onClose}>Admin</Link>
           )}
           <button type="button" className="drawer-link" onClick={onLogout}>Log out</button>
         </nav>
-        <p className="drawer-credit">
-          Made by Drew with <span className="heart" role="img" aria-label="love">♥</span> in Littleton, CO.
-        </p>
+        <div className="drawer-credit">
+          <p className="credit-main">Crafted by Drew in Littleton, CO</p>
+          <p className="credit-sub">Dedicated to my shipmates</p>
+          <p className="credit-sub">USS MAHAN (DDG-72)</p>
+        </div>
       </aside>
     </>
   );

@@ -6,9 +6,15 @@ function formatTime(isoOrSqlTimestamp) {
   return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
 
+// EASTER EGG (deliberately left out of the User Guide and release notes):
+// an entry that uses a tag named "Incident" (any capitalisation) gets a light
+// orange card via the .entry-incident class in index.css, so it stands out
+// from the other entries on the day.
+const isIncident = (entry) => entry.tags.some((t) => t.name.trim().toLowerCase() === 'incident');
+
 export default function EntryCard({ entry, canEdit, onEdit, onDelete }) {
   return (
-    <div className="card entry-card">
+    <div className={`card entry-card${isIncident(entry) ? ' entry-incident' : ''}`}>
       <div className="entry-meta">
         <span>
           <strong>{entry.author_name}</strong>

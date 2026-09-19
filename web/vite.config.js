@@ -3,19 +3,30 @@ import react from '@vitejs/plugin-react';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-// The app version comes from the root package.json and the release notes from
-// the root CHANGELOG.md, so a release is one edit in each place and the footer
-// and release-notes modal can never drift from them. In the Docker build both
-// files are copied to /app, one level above this folder (see ../Dockerfile).
+// The app version comes from the root package.json, the release notes from
+// CHANGELOG.md, the Credits tab from CREDITS.md, and the full third-party
+// license texts from THIRD_PARTY_NOTICES.md. All four live in the repo root so
+// what the app shows can never drift from what is in the repo. In the Docker
+// build they are copied to /app, one level above this folder (see ../Dockerfile).
 const rootDir = fileURLToPath(new URL('..', import.meta.url));
-const pkg = JSON.parse(fs.readFileSync(`${rootDir}package.json`, 'utf8'));
-const changelog = fs.readFileSync(`${rootDir}CHANGELOG.md`, 'utf8');
+const readRoot = (name) => fs.readFileSync(`${rootDir}${name}`, 'utf8');
+const pkg = JSON.parse(readRoot('package.json'));
+
+// Publishes THIRD_PARTY_NOTICES.md as /third-party-notices.txt so the license
+// texts of everything bundled into the browser code ship with the app.
+const thirdPartyNotices = {
+  name: 'third-party-notices',
+  generateBundle() {
+    this.emitFile({ type: 'asset', fileName: 'third-party-notices.txt', source: readRoot('THIRD_PARTY_NOTICES.md') });
+  },
+};
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), thirdPartyNotices],
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
-    __CHANGELOG__: JSON.stringify(changelog),
+    __CHANGELOG__: JSON.stringify(readRoot('CHANGELOG.md')),
+    __CREDITS__: JSON.stringify(readRoot('CREDITS.md')),
   },
   server: {
     proxy: {

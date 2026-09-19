@@ -13,6 +13,8 @@ import tagRoutes from './routes/tags.js';
 import entryRoutes from './routes/entries.js';
 import userRoutes from './routes/users.js';
 import meRoutes from './routes/me.js';
+import activityRoutes from './routes/activity.js';
+import { recordVersionOnStart } from './activity.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 7272;
@@ -48,6 +50,8 @@ await fastify.register(tagRoutes);
 await fastify.register(entryRoutes);
 await fastify.register(userRoutes);
 await fastify.register(meRoutes);
+recordVersionOnStart();
+await fastify.register(activityRoutes);
 
 // Serves the built React app. In the Docker image this is populated by the
 // frontend build stage; see ../Dockerfile.

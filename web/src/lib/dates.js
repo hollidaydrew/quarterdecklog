@@ -58,3 +58,27 @@ export function formatUsFromDate(dt) {
 export function formatListLabel(s, count = 0) {
   return `${formatUs(s)} ${weekdayName(s)}${count > 0 ? ` (${count})` : ''}`;
 }
+
+// SQLite stores UTC as "YYYY-MM-DD HH:MM:SS". Parse it as UTC; the formatters
+// below then show it in the browser's local time.
+export function parseSqlUtc(value) {
+  return new Date(value.includes('T') ? value : `${value.replace(' ', 'T')}Z`);
+}
+
+function hour12(d) {
+  return { h: d.getHours() % 12 || 12, ampm: d.getHours() >= 12 ? 'PM' : 'AM' };
+}
+
+// Activity log: "09-18-2026 08:37:12 PM"
+export function formatDateTimeLog(value) {
+  const d = parseSqlUtc(value);
+  const { h, ampm } = hour12(d);
+  return `${formatUsFromDate(d)} ${pad(h)}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${ampm}`;
+}
+
+// Team tab: "09-18-2026 8:37 PM"
+export function formatDateTimeShort(value) {
+  const d = parseSqlUtc(value);
+  const { h, ampm } = hour12(d);
+  return `${formatUsFromDate(d)} ${h}:${pad(d.getMinutes())} ${ampm}`;
+}

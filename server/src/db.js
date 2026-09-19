@@ -79,4 +79,27 @@ db.transaction(() => {
   // Used invites are no longer stored; joining now records invited_by on the
   // user and removes the invite. Pending (unused) invites are left untouched.
   db.prepare('DELETE FROM invites WHERE used_at IS NOT NULL').run();
+
+  // --- v0.4.0 ---
+  // When the user last signed in (UTC). Null until their next sign-in.
+  addColumnIfMissing('users', 'last_login_at', 'TEXT');
 })();
+
+// v0.4.0: rolling activity log (newest 2,500 rows are kept, see activity.js)
+// and a small key/value table used to notice when the app version changes.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS activity_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    actor_id INTEGER,
+    actor_name TEXT NOT NULL,
+    action TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    details TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS app_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
+`);

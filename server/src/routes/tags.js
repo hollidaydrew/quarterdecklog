@@ -1,5 +1,6 @@
 import { db } from '../db.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
+import { logActivity } from '../activity.js';
 
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
@@ -20,7 +21,12 @@ export default async function tagRoutes(fastify) {
       const result = db
         .prepare('INSERT INTO tags (name, color) VALUES (?, ?)')
         .run(name.trim(), color || '#5B7CFA');
-      return db.prepare('SELECT * FROM tags WHERE id = ?').get(result.lastInsertRowid);
+      const created = db.prepare('SELECT * FROM tags WHERE id = ?').get(result.lastInsertRowid);
+      logActivity(request.user, 'tag_created', `${request.user.display_name} created the tag "${created.name}"`, {
+        name: created.name,
+        color: created.color,
+      });
+      return created;
     } catch (err) {
       if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
         return reply.code(409).send({ error: 'A tag with that name already exists' });
@@ -42,13 +48,27 @@ export default async function tagRoutes(fastify) {
       color || tag.color,
       tag.id
     );
-    return db.prepare('SELECT * FROM tags WHERE id = ?').get(tag.id);
+    const updated = db.prepare('SELECT * FROM tags WHERE id = ?').get(tag.id);
+    if (updated.name !== tag.name || updated.color !== tag.color) {
+      logActivity(request.user, 'tag_updated', `${request.user.display_name} edited the tag "${tag.name}"`, {
+        changes: [
+          ...(updated.name !== tag.name ? [{ field: 'Name', from: tag.name, to: updated.name }] : []),
+          ...(updated.color !== tag.color ? [{ field: 'Color', from: tag.color, to: updated.color }] : []),
+        ],
+      });
+    }
+    return updated;
   });
 
   fastify.delete('/api/tags/:id', { preHandler: requireAdmin }, async (request, reply) => {
     const tag = db.prepare('SELECT * FROM tags WHERE id = ?').get(request.params.id);
     if (!tag) return reply.code(404).send({ error: 'Tag not found' });
+    const uses = db.prepare('SELECT COUNT(*) AS n FROM entry_tags WHERE tag_id = ?').get(tag.id).n;
     db.prepare('DELETE FROM tags WHERE id = ?').run(tag.id);
+    logActivity(request.user, 'tag_deleted', `${request.user.display_name} deleted the tag "${tag.name}"`, {
+      name: tag.name,
+      entries_that_used_it: uses,
+    });
     return { ok: true };
   });
 }

@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import { db } from '../db.js';
 import { requireAdmin } from '../middleware/auth.js';
+import { logActivity } from '../activity.js';
 
 const DEFAULT_EXPIRY_DAYS = 7;
 
@@ -28,6 +29,7 @@ export default async function inviteRoutes(fastify) {
       request.user.id,
       expiresAt
     );
+    logActivity(request.user, 'invite_created', `${request.user.display_name} created an invite`, { expires_at: expiresAt });
     return { token, expires_at: expiresAt };
   });
 
@@ -36,6 +38,7 @@ export default async function inviteRoutes(fastify) {
     if (!invite) return reply.code(404).send({ error: 'Invite not found' });
     if (invite.used_at) return reply.code(400).send({ error: 'Invite has already been used' });
     db.prepare('DELETE FROM invites WHERE id = ?').run(invite.id);
+    logActivity(request.user, 'invite_revoked', `${request.user.display_name} revoked an invite`);
     return { ok: true };
   });
 }

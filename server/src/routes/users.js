@@ -2,9 +2,8 @@ import argon2 from 'argon2';
 import crypto from 'node:crypto';
 import { db } from '../db.js';
 import { requireAdmin } from '../middleware/auth.js';
-
-const MAX_DISPLAY_NAME = 100;
-const MAX_USERNAME = 64;
+import { logActivity } from '../activity.js';
+import { parseProfileFields } from '../utils/profile.js';
 
 // No look-alike characters (0/O, 1/l/I) so a temporary password can be read
 // aloud or typed from a chat message without mistakes.
@@ -31,7 +30,7 @@ export default async function userRoutes(fastify) {
   fastify.get('/api/users', { preHandler: requireAdmin }, async () => {
     return db
       .prepare(
-        `SELECT u.id, u.username, u.display_name, u.is_admin, u.must_change_password, u.created_at,
+        `SELECT u.id, u.username, u.display_name, u.is_admin, u.must_change_password, u.created_at, u.last_login_at,
                 inviter.display_name AS invited_by_name
          FROM users u
          LEFT JOIN users inviter ON inviter.id = u.invited_by
@@ -41,39 +40,19 @@ export default async function userRoutes(fastify) {
       .all();
   });
 
-  // Edit a team member's display name, username and admin role.
+  // Edit a team member's display name, username and admin role. (Everyone can
+  // edit their own name and username through PUT /api/me; only an admin can
+  // change a role.)
   fastify.put('/api/users/:id', { preHandler: requireAdmin }, async (request, reply) => {
     const target = findActiveUser(request.params.id);
     if (!target) return reply.code(404).send({ error: 'User not found' });
 
-    const { display_name, username, is_admin } = request.body || {};
-    let nextDisplayName = target.display_name;
-    let nextUsername = target.username;
+    const parsed = parseProfileFields(request.body, target);
+    if (parsed.error) return reply.code(parsed.status).send({ error: parsed.error });
+
+    const { is_admin } = request.body || {};
     let nextIsAdmin = target.is_admin;
-
-    if (display_name !== undefined) {
-      if (typeof display_name !== 'string' || !display_name.trim()) {
-        return reply.code(400).send({ error: 'Display name is required' });
-      }
-      if (display_name.trim().length > MAX_DISPLAY_NAME) {
-        return reply.code(400).send({ error: `Display name can be at most ${MAX_DISPLAY_NAME} characters` });
-      }
-      nextDisplayName = display_name.trim();
-    }
-
-    if (username !== undefined) {
-      if (typeof username !== 'string' || !username.trim()) {
-        return reply.code(400).send({ error: 'Username is required' });
-      }
-      if (username.trim().length > MAX_USERNAME) {
-        return reply.code(400).send({ error: `Username can be at most ${MAX_USERNAME} characters` });
-      }
-      nextUsername = username.trim();
-      const clash = db
-        .prepare('SELECT id FROM users WHERE username = ? AND id != ?')
-        .get(nextUsername, target.id);
-      if (clash) return reply.code(409).send({ error: 'That username is already taken' });
-    }
+    const changes = [...parsed.changes];
 
     if (is_admin !== undefined) {
       if (typeof is_admin !== 'boolean') {
@@ -88,14 +67,27 @@ export default async function userRoutes(fastify) {
           return reply.code(400).send({ error: 'At least one admin account must remain' });
         }
       }
+      if (nextIsAdmin !== target.is_admin) {
+        changes.push({ field: 'Admin role', from: target.is_admin ? 'yes' : 'no', to: nextIsAdmin ? 'yes' : 'no' });
+      }
     }
 
     db.prepare('UPDATE users SET display_name = ?, username = ?, is_admin = ? WHERE id = ?').run(
-      nextDisplayName,
-      nextUsername,
+      parsed.display_name,
+      parsed.username,
       nextIsAdmin,
       target.id
     );
+
+    if (changes.length > 0) {
+      const whose = target.id === request.user.id ? 'their own account' : `${target.display_name}'s account`;
+      logActivity(
+        request.user,
+        'user_updated',
+        `${request.user.display_name} edited ${whose} (${changes.map((c) => c.field.toLowerCase()).join(', ')})`,
+        { user: target.display_name, changes }
+      );
+    }
 
     return db
       .prepare('SELECT id, username, display_name, is_admin, must_change_password, created_at FROM users WHERE id = ?')
@@ -117,6 +109,9 @@ export default async function userRoutes(fastify) {
       password_hash,
       target.id
     );
+    logActivity(request.user, 'password_reset', `${request.user.display_name} reset ${target.display_name}'s password`, {
+      user: target.display_name,
+    });
     return { temp_password };
   });
 
@@ -144,6 +139,10 @@ export default async function userRoutes(fastify) {
          WHERE id = ?`
       ).run(tombstoneUsername, target.id);
     })();
+    logActivity(request.user, 'user_deleted', `${request.user.display_name} deleted the user ${target.display_name}`, {
+      user: target.display_name,
+      username: target.username,
+    });
     return { ok: true };
   });
 }

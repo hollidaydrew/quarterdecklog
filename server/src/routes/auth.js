@@ -1,17 +1,8 @@
 import argon2 from 'argon2';
 import { db } from '../db.js';
 import { loadSessionUser, requireSession } from '../middleware/auth.js';
-
-function publicUser(user) {
-  return {
-    id: user.id,
-    username: user.username,
-    display_name: user.display_name,
-    is_admin: !!user.is_admin,
-    must_change_password: !!user.must_change_password,
-    preferred_view: user.preferred_view === 'calendar' ? 'calendar' : 'list',
-  };
-}
+import { publicUser } from '../utils/publicUser.js';
+import { logActivity } from '../activity.js';
 
 function findOpenInvite(token) {
   const invite = db.prepare('SELECT * FROM invites WHERE token = ?').get(token);
@@ -49,8 +40,10 @@ export default async function authRoutes(fastify) {
       .prepare('INSERT INTO users (username, display_name, password_hash, is_admin) VALUES (?, ?, ?, 1)')
       .run(username.trim(), display_name.trim(), password_hash);
 
+    db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(result.lastInsertRowid);
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(result.lastInsertRowid);
     request.session.userId = user.id;
+    logActivity(user, 'user_joined', `${user.display_name} created the first admin account`);
     return publicUser(user);
   });
 
@@ -76,6 +69,8 @@ export default async function authRoutes(fastify) {
       }
 
       request.session.userId = user.id;
+      db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
+      logActivity(user, 'sign_in', `${user.display_name} signed in`);
       return publicUser(user);
     }
   );
@@ -102,18 +97,28 @@ export default async function authRoutes(fastify) {
         return reply.code(400).send({ error: 'New password must be at least 8 characters' });
       }
 
+      const forced = !!request.user.must_change_password;
       const ok = await argon2.verify(request.user.password_hash, current_password).catch(() => false);
       if (!ok) {
-        return reply.code(400).send({ error: 'The temporary password is incorrect' });
+        return reply
+          .code(400)
+          .send({ error: forced ? 'The temporary password is incorrect' : 'Your current password is incorrect' });
       }
       if (new_password === current_password) {
-        return reply.code(400).send({ error: 'Choose a password different from the temporary one' });
+        return reply
+          .code(400)
+          .send({ error: forced ? 'Choose a password different from the temporary one' : 'Choose a password different from your current one' });
       }
 
       const password_hash = await argon2.hash(new_password);
       db.prepare('UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?').run(
         password_hash,
         request.user.id
+      );
+      logActivity(
+        request.user,
+        'password_changed',
+        `${request.user.display_name} changed their password${forced ? ' (replacing a temporary password)' : ''}`
       );
       return publicUser(db.prepare('SELECT * FROM users WHERE id = ?').get(request.user.id));
     }
@@ -155,7 +160,8 @@ export default async function authRoutes(fastify) {
         )
         .run(username.trim(), display_name.trim(), password_hash, fresh.created_by);
       db.prepare('DELETE FROM invites WHERE id = ?').run(fresh.id);
-      return { id: result.lastInsertRowid };
+      db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(result.lastInsertRowid);
+      return { id: result.lastInsertRowid, invitedBy: fresh.created_by };
     });
     const outcome = join();
 
@@ -168,6 +174,12 @@ export default async function authRoutes(fastify) {
 
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(outcome.id);
     request.session.userId = user.id;
+    const inviter = db.prepare('SELECT display_name FROM users WHERE id = ?').get(outcome.invitedBy);
+    logActivity(
+      user,
+      'user_joined',
+      `${user.display_name} signed up using an invite from ${inviter ? inviter.display_name : 'an admin'}`
+    );
     return publicUser(user);
   });
 }

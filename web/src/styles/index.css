@@ -249,6 +249,11 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
 .entry-body :is(p, ul, ol) { margin: 0 0 8px; }
 .entry-body :last-child { margin-bottom: 0; }
 
+/* Light-orange entry card; see the note above isIncident() in EntryCard.jsx. */
+.card.entry-incident {
+  background: #fff1dc;
+  border-color: #f3c58a;
+}
 .entry-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
 
 .tag-chip {
@@ -445,9 +450,10 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   padding-top: 16px;
   border-top: 1px solid var(--color-border);
   font-size: 13px;
-  color: var(--color-text-muted);
 }
-.heart { color: var(--color-danger); }
+.drawer-credit p { margin: 0 0 3px; }
+.credit-main { color: var(--color-text); }
+.credit-sub { color: var(--color-text-faint); }
 
 /* ---- Release notes ---- */
 .release-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
@@ -608,6 +614,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 /* ---- Admin ---- */
 .stack { display: flex; flex-direction: column; gap: 14px; }
 .field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--color-text-muted); }
+.field input { font-size: 16px; color: var(--color-text); }
 .check { display: flex; align-items: center; gap: 8px; font-size: 14px; }
 .row-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .user-row, .invite-row { gap: 12px; }
@@ -640,4 +647,95 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 
 @media (prefers-reduced-motion: reduce) {
   .drawer { animation: none; }
+}
+
+/* ---- Tabs (release notes / credits) ---- */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+.tabs button {
+  padding: 8px 14px;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+}
+.tabs button:hover { background: var(--color-border); }
+.tabs button.active { color: var(--color-primary-dark); border-bottom-color: var(--color-primary); }
+
+/* ---- Credits ---- */
+.credits-section h3 { font-size: 15px; }
+.credits-intro { margin: 4px 0 8px; font-size: 14px; line-height: 1.45; }
+.release .credits-list { list-style: none; margin: 0; padding: 0; }
+.credits-list a { color: var(--color-primary-dark); font-weight: 600; text-decoration: none; }
+.credits-list a:hover { text-decoration: underline; }
+.credits-intro a { color: var(--color-primary-dark); font-weight: 600; }
+.credits-list li {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) minmax(90px, 0.9fr) 2fr;
+  gap: 4px 12px;
+  padding: 5px 0;
+  border-top: 1px solid var(--color-border);
+  font-size: 14px;
+}
+.credits-list li:first-child { border-top: none; }
+.credits-name { font-weight: 600; }
+.credits-license, .credits-purpose { font-size: 13px; }
+
+/* ---- User Guide ---- */
+.guide-section { padding: 10px 0; border-top: 1px solid var(--color-border); }
+.guide-section:first-of-type { border-top: none; }
+.guide-section h4 { margin: 0 0 6px; font-size: 15px; }
+.guide-section ul { margin: 0; padding-left: 20px; }
+.guide-section li { margin: 4px 0; font-size: 14px; line-height: 1.5; }
+
+/* ---- Activity log ---- */
+.activity-list { list-style: none; margin: 0; padding: 0; }
+.activity-row {
+  padding: 8px 0;
+  border-top: 1px solid var(--color-border);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 40px;
+}
+.activity-row:first-child { border-top: none; }
+.activity-line { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; font-size: 14px; }
+.activity-time { color: var(--color-text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 13px; }
+.activity-summary { flex: 1; min-width: 220px; }
+.link-button {
+  padding: 0;
+  background: transparent;
+  color: var(--color-primary-dark);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 4px;
+}
+.link-button:hover { background: transparent; text-decoration: underline; }
+.activity-details {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.activity-block + .activity-block { margin-top: 8px; }
+.activity-block-label { font-weight: 700; margin-bottom: 2px; }
+.activity-text { margin: 0; white-space: pre-wrap; word-break: break-word; font: inherit; }
+.activity-tags { margin: 4px 0 0; color: var(--color-text-muted); }
+.activity-changes { margin: 0; padding-left: 18px; }
+
+/* ---- Profile ---- */
+.ok-text { color: #2f9e44; font-size: 14px; margin: 0; }
+.profile-password { padding-top: 14px; border-top: 1px solid var(--color-border); }
+
+/* ---- Team tab ---- */
+.user-info { display: flex; flex-direction: column; gap: 2px; }
+.last-login { font-size: 12px; }
+
+@media (max-width: 800px) {
+  .credits-list li { grid-template-columns: 1fr; }
 }
