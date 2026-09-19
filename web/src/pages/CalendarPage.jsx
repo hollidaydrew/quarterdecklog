@@ -1,18 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
+import ViewToggle from '../components/ViewToggle.jsx';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function pad(n) { return String(n).padStart(2, '0'); }
 function toDateStr(y, m, d) { return `${y}-${pad(m)}-${pad(d)}`; }
 
-export default function CalendarPage() {
+export default function CalendarPage({ user, onViewUsed }) {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1); // 1-12
   const [counts, setCounts] = useState({});
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user.preferred_view !== 'calendar') onViewUsed('calendar');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     api.get(`/api/entries/month?year=${year}&month=${month}`).then(setCounts);
@@ -39,30 +45,35 @@ export default function CalendarPage() {
   const monthLabel = firstOfMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
   return (
-    <div className="card">
-      <div className="calendar-header">
-        <button className="secondary" onClick={() => changeMonth(-1)}>&larr; Prev</button>
-        <h2 style={{ margin: 0 }}>{monthLabel}</h2>
-        <button className="secondary" onClick={() => changeMonth(1)}>Next &rarr;</button>
+    <div>
+      <div className="page-toolbar">
+        <ViewToggle current="calendar" />
       </div>
-      <div className="calendar-grid">
-        {WEEKDAYS.map((w) => <div key={w} className="calendar-weekday">{w}</div>)}
-        {cells.map((d, i) => {
-          if (d === null) return <div key={`b${i}`} className="calendar-day empty" />;
-          const dateStr = toDateStr(year, month, d);
-          const count = counts[dateStr] || 0;
-          return (
-            <button
-              key={dateStr}
-              type="button"
-              className={`calendar-day${dateStr === todayStr ? ' today' : ''}`}
-              onClick={() => navigate(`/day/${dateStr}`)}
-            >
-              <span>{d}</span>
-              {count > 0 && <span className="calendar-dot" title={`${count} entr${count === 1 ? 'y' : 'ies'}`} />}
-            </button>
-          );
-        })}
+      <div className="card">
+        <div className="calendar-header">
+          <button className="secondary" onClick={() => changeMonth(-1)}>&larr; Prev</button>
+          <h2 style={{ margin: 0 }}>{monthLabel}</h2>
+          <button className="secondary" onClick={() => changeMonth(1)}>Next &rarr;</button>
+        </div>
+        <div className="calendar-grid">
+          {WEEKDAYS.map((w) => <div key={w} className="calendar-weekday">{w}</div>)}
+          {cells.map((d, i) => {
+            if (d === null) return <div key={`b${i}`} className="calendar-day empty" />;
+            const dateStr = toDateStr(year, month, d);
+            const count = counts[dateStr] || 0;
+            return (
+              <button
+                key={dateStr}
+                type="button"
+                className={`calendar-day${dateStr === todayStr ? ' today' : ''}`}
+                onClick={() => navigate(`/day/${dateStr}`)}
+              >
+                <span>{d}</span>
+                {count > 0 && <span className="calendar-dot" title={`${count} entr${count === 1 ? 'y' : 'ies'}`} />}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

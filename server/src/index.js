@@ -12,6 +12,7 @@ import inviteRoutes from './routes/invites.js';
 import tagRoutes from './routes/tags.js';
 import entryRoutes from './routes/entries.js';
 import userRoutes from './routes/users.js';
+import meRoutes from './routes/me.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 7272;
@@ -26,6 +27,8 @@ if (!SESSION_SECRET || SESSION_SECRET.length < 32) {
 }
 
 const fastify = Fastify({ logger: true, trustProxy: true });
+
+fastify.decorateRequest('user', null);
 
 await fastify.register(rateLimit, { global: false });
 await fastify.register(cookie);
@@ -44,6 +47,7 @@ await fastify.register(inviteRoutes);
 await fastify.register(tagRoutes);
 await fastify.register(entryRoutes);
 await fastify.register(userRoutes);
+await fastify.register(meRoutes);
 
 // Serves the built React app. In the Docker image this is populated by the
 // frontend build stage; see ../Dockerfile.

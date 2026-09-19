@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api.js';
+import Logo from '../components/Logo.jsx';
 
 export default function JoinPage({ onDone }) {
   const { token } = useParams();
@@ -45,7 +46,7 @@ export default function JoinPage({ onDone }) {
     return (
       <div className="auth-screen">
         <div className="auth-card card">
-          <h2>⚓ QuarterDeckLog</h2>
+          <Logo height={56} className="auth-logo" />
           <p className="error-text">{inviteError}</p>
           <p className="muted">Ask whoever sent you this link to generate a new one.</p>
         </div>
@@ -56,7 +57,8 @@ export default function JoinPage({ onDone }) {
   return (
     <div className="auth-screen">
       <form className="auth-card card" onSubmit={submit}>
-        <h2>⚓ You're invited</h2>
+        <Logo height={56} className="auth-logo" />
+        <h2>You're invited</h2>
         <p className="subtitle">Set up your account to join the log.</p>
         <input type="text" placeholder="Display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required autoCapitalize="none" />

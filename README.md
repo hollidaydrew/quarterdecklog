@@ -4,13 +4,16 @@ A self-hosted, shared digital logbook for teams — inspired by the paper quarte
 
 Click a day on the calendar, see everything that was logged. Write entries in a simple rich-text editor, tag them (bug, incident, FYI, whatever your team needs), and hand off cleanly.
 
-## Features (v0.1)
+## Features
 
 - Single shared team log — everyone sees the same timeline
+- List view: a scrolling list of dates on the left, the selected day's entries on the right, with a single-day or date-range filter
 - Calendar view: click a day, see that day's entries in order
 - WYSIWYG entry editor (bold, lists, quotes, code, links)
 - Admin-managed, color-coded tags; filter a day's entries by tag
 - Invite-link based onboarding — no public signup
+- Admin tools: manage tags, invites and team members (edit, reset password, delete)
+- Release notes: click the version in the footer, or read [CHANGELOG.md](CHANGELOG.md)
 - Runs as a single Docker container with a SQLite database on a mounted volume
 
 ## Quick start
@@ -30,6 +33,17 @@ Click a day on the calendar, see everything that was logged. Write entries in a 
 3. Open `http://localhost:7272` (or whatever `HOST_PORT` you set). The first person to load the app is walked through creating the admin account.
 
 4. As admin, go to **Admin → Invites** to generate an invite link, and **Admin → Tags** to set up your team's tags.
+
+## Upgrading
+
+Pull the latest code and rebuild. Your data lives in the Docker volume and is kept; the database upgrades itself on first start.
+
+```
+git pull
+docker compose up -d --build
+```
+
+See [CHANGELOG.md](CHANGELOG.md) for what changed in each version. Everyone is signed out when the container restarts.
 
 ## Configuration
 
@@ -52,12 +66,14 @@ This repo is public, so a few things are worth knowing if you're running your ow
 - The first-run admin account is created through the UI on first launch, not via a hardcoded or default credential.
 - Passwords are hashed with argon2. Login is rate-limited (10 attempts / 5 minutes per IP).
 - New accounts can only be created via an admin-issued, expiring, single-use invite link — there is no public signup form.
+- Admins can reset a user's password; the app issues a temporary password that must be changed at the next sign-in.
+- Role changes, password resets and deleted accounts take effect immediately, because the signed-in user is re-read from the database on every request.
 - Entry content is sanitized server-side (allow-listed tags/attributes only) before it's stored, to prevent stored XSS from rich-text input.
 - Dependabot and a GitHub Actions secret-scan (gitleaks) run on this repo — see `.github/`.
 
 If you find a security issue, please open a private security advisory on GitHub rather than a public issue.
 
-## Known limitations (v0.1)
+## Known limitations
 
 - Sessions are stored in memory — restarting the container logs everyone out. Fine for a small team; a persistent session store can be added later if needed.
 - No file/image attachments on entries yet (text and formatting only).
