@@ -1,16 +1,23 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Routes, Route, Navigate, useNavigate, Link } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
 import { api } from './api.js';
 import SetupPage from './pages/SetupPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import JoinPage from './pages/JoinPage.jsx';
+import ChangePasswordPage from './pages/ChangePasswordPage.jsx';
 import CalendarPage from './pages/CalendarPage.jsx';
+import ListPage from './pages/ListPage.jsx';
 import DayView from './pages/DayView.jsx';
 import AdminSettings from './pages/AdminSettings.jsx';
+import Logo from './components/Logo.jsx';
+import Footer from './components/Footer.jsx';
+import MenuDrawer from './components/MenuDrawer.jsx';
 
 export default function App() {
   const [status, setStatus] = useState(null); // { setupRequired, user } | null while loading
+  const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const refreshStatus = useCallback(async () => {
     const s = await api.get('/api/auth/status');
@@ -22,50 +29,85 @@ export default function App() {
     refreshStatus();
   }, [refreshStatus]);
 
+  // Saves the last view (list or calendar) on the account so the logo returns
+  // to it, and mirrors it locally so no extra status request is needed.
+  const rememberView = useCallback((view) => {
+    api
+      .put('/api/me/view', { view })
+      .then(() => setStatus((s) => (s && s.user ? { ...s, user: { ...s.user, preferred_view: view } } : s)))
+      .catch(() => {});
+  }, []);
+
   const handleLogout = async () => {
     await api.post('/api/auth/logout');
+    setMenuOpen(false);
     await refreshStatus();
     navigate('/login');
   };
 
   if (!status) return null; // brief blank while checking session; avoids a flash of the wrong screen
 
+  let content;
   if (status.setupRequired) {
-    return (
+    content = (
       <Routes>
         <Route path="*" element={<SetupPage onDone={refreshStatus} />} />
       </Routes>
     );
-  }
-
-  if (!status.user) {
-    return (
+  } else if (!status.user) {
+    content = (
       <Routes>
         <Route path="/join/:token" element={<JoinPage onDone={refreshStatus} />} />
         <Route path="*" element={<LoginPage onDone={refreshStatus} />} />
       </Routes>
     );
+  } else if (status.user.must_change_password) {
+    content = <ChangePasswordPage onDone={refreshStatus} onLogout={handleLogout} />;
+  } else {
+    const user = status.user;
+    const isList = location.pathname.startsWith('/list');
+    content = (
+      <div className={`app-shell${isList ? ' fill' : ''}`}>
+        <header className="topbar">
+          <Link to="/" className="brand" aria-label="QuarterDeckLog, back to your log">
+            <Logo height={36} />
+          </Link>
+          <div className="topbar-right">
+            <span className="hello">Hello, {user.display_name}</span>
+            <button
+              type="button"
+              className="icon-button"
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen(true)}
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path d="M2 4.5h14M2 9h14M2 13.5h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+        </header>
+        {menuOpen && <MenuDrawer user={user} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />}
+        <div className={`main-content${isList ? ' wide fill' : ''}`}>
+          <Routes>
+            <Route path="/" element={<Navigate to={user.preferred_view === 'calendar' ? '/calendar' : '/list'} replace />} />
+            <Route path="/list/:date?" element={<ListPage user={user} onViewUsed={rememberView} />} />
+            <Route path="/calendar" element={<CalendarPage user={user} onViewUsed={rememberView} />} />
+            <Route path="/day/:date" element={<DayView user={user} onViewUsed={rememberView} />} />
+            {user.is_admin && (
+              <Route path="/admin" element={<AdminSettings currentUser={user} onSelfChanged={refreshStatus} />} />
+            )}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <h1>⚓ QuarterDeckLog</h1>
-        <nav>
-          <Link to="/">Log</Link>
-          {status.user.is_admin && <Link to="/admin">Admin</Link>}
-          <span className="muted">{status.user.display_name}</span>
-          <button className="secondary" onClick={handleLogout}>Log out</button>
-        </nav>
-      </header>
-      <div className="main-content">
-        <Routes>
-          <Route path="/" element={<CalendarPage />} />
-          <Route path="/day/:date" element={<DayView user={status.user} />} />
-          {status.user.is_admin && <Route path="/admin" element={<AdminSettings />} />}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
-    </div>
+    <>
+      {content}
+      <Footer />
+    </>
   );
 }

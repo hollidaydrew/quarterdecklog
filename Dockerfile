@@ -3,6 +3,9 @@ FROM node:20-bookworm-slim AS web-build
 WORKDIR /app/web
 COPY web/package*.json ./
 RUN npm install
+# The web build reads the app version and release notes from the repo root
+# (see web/vite.config.js), which sits one level above /app/web.
+COPY package.json CHANGELOG.md /app/
 COPY web/ ./
 RUN npm run build
 # vite.config.js outputs to ../server/public relative to /app/web, i.e. /app/server/public

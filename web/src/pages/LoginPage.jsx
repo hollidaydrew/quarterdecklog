@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api.js';
+import Logo from '../components/Logo.jsx';
 
 export default function LoginPage({ onDone }) {
   const [username, setUsername] = useState('');
@@ -24,7 +25,7 @@ export default function LoginPage({ onDone }) {
   return (
     <div className="auth-screen">
       <form className="auth-card card" onSubmit={submit}>
-        <h2>⚓ QuarterDeckLog</h2>
+        <Logo height={56} className="auth-logo" />
         <p className="subtitle">Sign in to the log.</p>
         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required autoCapitalize="none" autoFocus />
         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />

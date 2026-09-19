@@ -10,7 +10,11 @@ export default function EntryCard({ entry, canEdit, onEdit, onDelete }) {
   return (
     <div className="card entry-card">
       <div className="entry-meta">
-        <span><strong>{entry.author_name}</strong> · {formatTime(entry.created_at)}</span>
+        <span>
+          <strong>{entry.author_name}</strong>
+          {entry.author_deleted ? <span className="muted"> (deleted user)</span> : null}
+          {' · '}{formatTime(entry.created_at)}
+        </span>
         {canEdit && (
           <span>
             <button className="secondary" onClick={onEdit} style={{ padding: '4px 10px', marginRight: 6 }}>Edit</button>

@@ -42,6 +42,24 @@ export default async function entryRoutes(fastify) {
     return counts;
   });
 
+  // Entry counts per day for an arbitrary date range (the list view). One
+  // grouped query on the entry_date index; only days that have entries are
+  // returned, and the client fills in the empty days.
+  fastify.get('/api/entries/range', { preHandler: requireAuth }, async (request, reply) => {
+    const { from, to } = request.query;
+    if (!isValidDateString(from) || !isValidDateString(to) || from > to) {
+      return reply.code(400).send({ error: 'from and to must be valid YYYY-MM-DD dates, with from on or before to' });
+    }
+    const rows = db
+      .prepare(
+        'SELECT entry_date, COUNT(*) AS count FROM entries WHERE entry_date >= ? AND entry_date <= ? GROUP BY entry_date'
+      )
+      .all(from, to);
+    const counts = {};
+    for (const row of rows) counts[row.entry_date] = row.count;
+    return counts;
+  });
+
   fastify.get('/api/entries', { preHandler: requireAuth }, async (request, reply) => {
     const { date } = request.query;
     if (!isValidDateString(date)) {
@@ -49,7 +67,8 @@ export default async function entryRoutes(fastify) {
     }
     const rows = db
       .prepare(
-        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username
+        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
+                (users.deleted_at IS NOT NULL) AS author_deleted
          FROM entries
          JOIN users ON users.id = entries.author_id
          WHERE entries.entry_date = ?
@@ -71,12 +90,13 @@ export default async function entryRoutes(fastify) {
 
     const result = db
       .prepare('INSERT INTO entries (author_id, body, entry_date) VALUES (?, ?, ?)')
-      .run(request.session.user.id, clean, entry_date);
+      .run(request.user.id, clean, entry_date);
     setEntryTags(result.lastInsertRowid, tag_ids);
 
     const entry = db
       .prepare(
-        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username
+        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
+                (users.deleted_at IS NOT NULL) AS author_deleted
          FROM entries JOIN users ON users.id = entries.author_id WHERE entries.id = ?`
       )
       .get(result.lastInsertRowid);
@@ -86,7 +106,7 @@ export default async function entryRoutes(fastify) {
   fastify.put('/api/entries/:id', { preHandler: requireAuth }, async (request, reply) => {
     const entry = db.prepare('SELECT * FROM entries WHERE id = ?').get(request.params.id);
     if (!entry) return reply.code(404).send({ error: 'Entry not found' });
-    if (entry.author_id !== request.session.user.id && !request.session.user.is_admin) {
+    if (entry.author_id !== request.user.id && !request.user.is_admin) {
       return reply.code(403).send({ error: 'You can only edit your own entries' });
     }
 
@@ -101,7 +121,8 @@ export default async function entryRoutes(fastify) {
 
     const updated = db
       .prepare(
-        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username
+        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
+                (users.deleted_at IS NOT NULL) AS author_deleted
          FROM entries JOIN users ON users.id = entries.author_id WHERE entries.id = ?`
       )
       .get(entry.id);
@@ -111,7 +132,7 @@ export default async function entryRoutes(fastify) {
   fastify.delete('/api/entries/:id', { preHandler: requireAuth }, async (request, reply) => {
     const entry = db.prepare('SELECT * FROM entries WHERE id = ?').get(request.params.id);
     if (!entry) return reply.code(404).send({ error: 'Entry not found' });
-    if (entry.author_id !== request.session.user.id && !request.session.user.is_admin) {
+    if (entry.author_id !== request.user.id && !request.user.is_admin) {
       return reply.code(403).send({ error: 'You can only delete your own entries' });
     }
     db.prepare('DELETE FROM entries WHERE id = ?').run(entry.id);

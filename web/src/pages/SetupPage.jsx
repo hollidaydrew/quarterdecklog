@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api.js';
+import Logo from '../components/Logo.jsx';
 
 export default function SetupPage({ onDone }) {
   const [username, setUsername] = useState('');
@@ -30,7 +31,8 @@ export default function SetupPage({ onDone }) {
   return (
     <div className="auth-screen">
       <form className="auth-card card" onSubmit={submit}>
-        <h2>⚓ Welcome to QuarterDeckLog</h2>
+        <Logo height={56} className="auth-logo" />
+        <h2>Welcome</h2>
         <p className="subtitle">This is a fresh install. Create the first admin account to get started.</p>
         <input type="text" placeholder="Display name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
         <input type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} required autoCapitalize="none" />
