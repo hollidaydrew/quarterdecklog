@@ -3,6 +3,23 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.4.0] - 2026-09-18
+
+### Added
+- Activity log (admins only), opened from the menu. It lists the last 2,500 events, newest first: entries added, edited and deleted (with the entry's text and what changed), invites, sign-ups, sign-ins, tag changes, profile and user changes, and version updates. Each event shows the date and time to the second, in your local time.
+- My profile, opened from the menu: everyone can change their own display name, username and password. Only an admin can change roles.
+- User Guide, opened from the menu, with basic instructions for using QuarterDeckLog.
+- Credits tab in the release notes window, listing the software QuarterDeckLog is built with and the license of each, with a link to the full license texts.
+- Admin, Team: each person's last login date and time is shown under their name.
+
+### Changed
+- The release notes window now has two tabs: Release notes and Credits.
+
+### Upgrading from 0.3.0
+- Your data is kept. The database adds a last-login field and an activity log the first time 0.4.0 starts.
+- Nothing from before this release appears in the activity log, and last login is blank until each person next signs in.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.3.0] - 2026-09-18
 
 ### Changed

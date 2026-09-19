@@ -3,9 +3,9 @@ FROM node:20-bookworm-slim AS web-build
 WORKDIR /app/web
 COPY web/package*.json ./
 RUN npm install
-# The web build reads the app version and release notes from the repo root
+# The web build reads the app version, release notes, credits and license notices from the repo root
 # (see web/vite.config.js), which sits one level above /app/web.
-COPY package.json CHANGELOG.md /app/
+COPY package.json CHANGELOG.md CREDITS.md THIRD_PARTY_NOTICES.md /app/
 COPY web/ ./
 RUN npm run build
 # vite.config.js outputs to ../server/public relative to /app/web, i.e. /app/server/public
@@ -29,6 +29,8 @@ RUN groupadd -r quarterdeck && useradd -r -g quarterdeck quarterdeck \
 COPY --from=server-build /app/server/node_modules ./node_modules
 COPY server/ ./
 COPY --from=web-build /app/server/public ./public
+# The project license and third-party notices travel with the image.
+COPY LICENSE THIRD_PARTY_NOTICES.md /app/
 
 USER quarterdeck
 EXPOSE 7272

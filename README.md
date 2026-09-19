@@ -12,7 +12,10 @@ Click a day on the calendar, see everything that was logged. Write entries in a 
 - Rich-text entry editor (bold, italic, strikethrough, links, heading, quotes, code, lists)
 - Admin-managed, color-coded tags; filter a day's entries by tag
 - Invite-link based onboarding — no public signup
-- Admin tools: manage tags, invites and team members (edit, reset password, delete)
+- Admin tools: manage tags, invites and team members (edit, reset password, delete, last login)
+- Activity log (admins): the last 2,500 events, including entry text and changes
+- My profile (everyone): change your own display name, username and password
+- In-app User Guide, plus release notes and credits
 - Release notes: click the version in the footer, or read [CHANGELOG.md](CHANGELOG.md)
 - Runs as a single Docker container with a SQLite database on a mounted volume
 
@@ -70,6 +73,8 @@ This repo is public, so a few things are worth knowing if you're running your ow
 - Role changes, password resets and deleted accounts take effect immediately, because the signed-in user is re-read from the database on every request.
 - Entry content is sanitized server-side (allow-listed tags/attributes only) before it's stored, to prevent stored XSS from rich-text input.
 - Dependabot and a GitHub Actions secret-scan (gitleaks) run on this repo — see `.github/`.
+- Anyone can edit their own display name, username and password, but a request to change a role is refused for everyone except through an admin editing someone else. Entries can only be edited or deleted by their author or an admin (enforced on the server).
+- The activity log is admin-only. It keeps entry text (including text of deleted entries) for up to 2,500 events.
 
 If you find a security issue, please open a private security advisory on GitHub rather than a public issue.
 
@@ -84,6 +89,19 @@ If you find a security issue, please open a private security advisory on GitHub 
 - Backend: Node.js, Fastify, better-sqlite3
 - Frontend: React, Vite, [Trix](https://github.com/basecamp/trix) (rich-text editor)
 - Single multi-stage Dockerfile, SQLite on a named Docker volume
+
+## Credits and licenses
+
+- [CREDITS.md](CREDITS.md) lists what QuarterDeckLog is built with; the app shows it on the Credits tab of the release notes.
+- [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) holds the license text of every third-party package that ships with the app. The app also serves it at `/third-party-notices.txt`.
+- After changing dependencies, run `npm run generate:notices` and then `npm run check:credits` from the repo root (run `npm ci` in `server/` and `web/` first). The check fails if a dependency isn't credited, a package's license text is missing, or a package uses a license that hasn't been reviewed.
+- The secret-scan workflow uses [gitleaks-action](https://github.com/gitleaks/gitleaks-action), which is under its own license (Gitleaks LLC): free for repos owned by a personal GitHub account, but repos owned by an organization need a free license key. Moving this repo to an organization means adding that key or switching to the MIT-licensed gitleaks CLI.
+
+## Releasing
+
+1. Update the version in the root, `server/` and `web/` `package.json` files and lockfiles.
+2. Add the release to [CHANGELOG.md](CHANGELOG.md) (the footer and release notes read it).
+3. If dependencies changed: `npm run generate:notices` and `npm run check:credits`, and update [CREDITS.md](CREDITS.md).
 
 ## License
 

@@ -2,6 +2,7 @@ import { db } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sanitizeEntryBody } from '../utils/sanitize.js';
 import { isValidDateString, isValidYearMonth } from '../utils/date.js';
+import { htmlToText, logActivity, usDate } from '../activity.js';
 
 function attachTags(entry) {
   const tags = db
@@ -13,6 +14,15 @@ function attachTags(entry) {
     )
     .all(entry.id);
   return { ...entry, tags };
+}
+
+// What the activity log keeps about an entry: plain text and tag names.
+function entrySnapshot(body, tagNames) {
+  return { text: htmlToText(body), tags: tagNames };
+}
+
+function tagNamesFor(entryId) {
+  return attachTags({ id: entryId }).tags.map((t) => t.name);
 }
 
 function setEntryTags(entryId, tagIds) {
@@ -92,6 +102,11 @@ export default async function entryRoutes(fastify) {
       .prepare('INSERT INTO entries (author_id, body, entry_date) VALUES (?, ?, ?)')
       .run(request.user.id, clean, entry_date);
     setEntryTags(result.lastInsertRowid, tag_ids);
+    logActivity(request.user, 'entry_created', `${request.user.display_name} added an entry for ${usDate(entry_date)}`, {
+      entry_id: Number(result.lastInsertRowid),
+      entry_date,
+      after: entrySnapshot(clean, tagNamesFor(result.lastInsertRowid)),
+    });
 
     const entry = db
       .prepare(
@@ -116,8 +131,22 @@ export default async function entryRoutes(fastify) {
       return reply.code(400).send({ error: 'Entry body cannot be empty' });
     }
 
+    const beforeTags = tagNamesFor(entry.id);
+    const beforeTagIds = db.prepare('SELECT tag_id FROM entry_tags WHERE entry_id = ?').all(entry.id).map((r) => r.tag_id).sort();
     db.prepare("UPDATE entries SET body = ?, updated_at = datetime('now') WHERE id = ?").run(clean, entry.id);
     setEntryTags(entry.id, tag_ids);
+    const afterTagIds = db.prepare('SELECT tag_id FROM entry_tags WHERE entry_id = ?').all(entry.id).map((r) => r.tag_id).sort();
+    if (clean !== entry.body || beforeTagIds.join() !== afterTagIds.join()) {
+      const author = db.prepare('SELECT display_name FROM users WHERE id = ?').get(entry.author_id);
+      const whose = entry.author_id === request.user.id ? 'an entry' : `${author.display_name}'s entry`;
+      logActivity(request.user, 'entry_updated', `${request.user.display_name} edited ${whose} for ${usDate(entry.entry_date)}`, {
+        entry_id: entry.id,
+        entry_date: entry.entry_date,
+        author: author.display_name,
+        before: entrySnapshot(entry.body, beforeTags),
+        after: entrySnapshot(clean, tagNamesFor(entry.id)),
+      });
+    }
 
     const updated = db
       .prepare(
@@ -135,7 +164,16 @@ export default async function entryRoutes(fastify) {
     if (entry.author_id !== request.user.id && !request.user.is_admin) {
       return reply.code(403).send({ error: 'You can only delete your own entries' });
     }
+    const beforeTags = tagNamesFor(entry.id);
+    const author = db.prepare('SELECT display_name FROM users WHERE id = ?').get(entry.author_id);
     db.prepare('DELETE FROM entries WHERE id = ?').run(entry.id);
+    const whose = entry.author_id === request.user.id ? 'an entry' : `${author.display_name}'s entry`;
+    logActivity(request.user, 'entry_deleted', `${request.user.display_name} deleted ${whose} for ${usDate(entry.entry_date)}`, {
+      entry_id: entry.id,
+      entry_date: entry.entry_date,
+      author: author.display_name,
+      before: entrySnapshot(entry.body, beforeTags),
+    });
     return { ok: true };
   });
 }

@@ -12,10 +12,14 @@ import AdminSettings from './pages/AdminSettings.jsx';
 import Logo from './components/Logo.jsx';
 import Footer from './components/Footer.jsx';
 import MenuDrawer from './components/MenuDrawer.jsx';
+import ProfileModal from './components/ProfileModal.jsx';
+import UserGuideModal from './components/UserGuideModal.jsx';
+import ActivityLogModal from './components/ActivityLogModal.jsx';
 
 export default function App() {
   const [status, setStatus] = useState(null); // { setupRequired, user } | null while loading
   const [menuOpen, setMenuOpen] = useState(false);
+  const [menuModal, setMenuModal] = useState(null); // 'profile' | 'guide' | 'activity' | null
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,6 +40,7 @@ export default function App() {
     () =>
       onSessionProblem(() => {
         setMenuOpen(false);
+        setMenuModal(null);
         api
           .get('/api/auth/status')
           .then((s) => {
@@ -59,6 +64,7 @@ export default function App() {
   const handleLogout = async () => {
     await api.post('/api/auth/logout');
     setMenuOpen(false);
+    setMenuModal(null);
     await refreshStatus();
     navigate('/login');
   };
@@ -105,7 +111,19 @@ export default function App() {
             </button>
           </div>
         </header>
-        {menuOpen && <MenuDrawer user={user} onClose={() => setMenuOpen(false)} onLogout={handleLogout} />}
+        {menuOpen && (
+          <MenuDrawer
+            user={user}
+            onClose={() => setMenuOpen(false)}
+            onLogout={handleLogout}
+            onOpenProfile={() => { setMenuOpen(false); setMenuModal('profile'); }}
+            onOpenGuide={() => { setMenuOpen(false); setMenuModal('guide'); }}
+            onOpenActivity={() => { setMenuOpen(false); setMenuModal('activity'); }}
+          />
+        )}
+        {menuModal === 'profile' && <ProfileModal user={user} onClose={() => setMenuModal(null)} onSaved={refreshStatus} />}
+        {menuModal === 'guide' && <UserGuideModal user={user} onClose={() => setMenuModal(null)} />}
+        {menuModal === 'activity' && user.is_admin && <ActivityLogModal onClose={() => setMenuModal(null)} />}
         <div className={`main-content${isList ? ' wide fill' : ''}`}>
           <Routes>
             <Route path="/" element={<Navigate to={user.preferred_view === 'calendar' ? '/calendar' : '/list'} replace />} />

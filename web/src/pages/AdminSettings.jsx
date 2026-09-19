@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api.js';
 import TagChip from '../components/TagChip.jsx';
 import Modal from '../components/Modal.jsx';
-import { formatUsFromDate } from '../lib/dates.js';
+import { formatDateTimeShort, formatUsFromDate } from '../lib/dates.js';
 
 function TagManager() {
   const [tags, setTags] = useState([]);
@@ -258,13 +258,18 @@ function UserRoster({ currentUser, onSelfChanged }) {
         const isSelf = u.id === currentUser.id;
         return (
           <div key={u.id} className="list-row user-row">
-            <span>
-              {u.display_name}{' '}
-              <span className="muted">
-                @{u.username}
-                {u.is_admin ? ' · admin' : ''}
-                {u.must_change_password ? ' · temporary password pending' : ''}
-                {u.invited_by_name ? ` · invited by ${u.invited_by_name}` : ''}
+            <span className="user-info">
+              <span>
+                {u.display_name}{' '}
+                <span className="muted">
+                  @{u.username}
+                  {u.is_admin ? ' · admin' : ''}
+                  {u.must_change_password ? ' · temporary password pending' : ''}
+                  {u.invited_by_name ? ` · invited by ${u.invited_by_name}` : ''}
+                </span>
+              </span>
+              <span className="muted last-login">
+                {u.last_login_at ? `Last login: ${formatDateTimeShort(u.last_login_at)}` : 'No login recorded yet'}
               </span>
             </span>
             <span className="row-actions">
