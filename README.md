@@ -1,4 +1,4 @@
-# ⚓ QuarterDeckLog
+# QuarterDeckLog
 
 A self-hosted, shared digital logbook for teams — inspired by the paper quarterdeck watch log used aboard Navy ships. Log what happened, day by day, so the next person on shift can catch up in a minute instead of digging through chat history.
 
