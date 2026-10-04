@@ -16,11 +16,12 @@ import MenuDrawer from './components/MenuDrawer.jsx';
 import ProfileModal from './components/ProfileModal.jsx';
 import UserGuideModal from './components/UserGuideModal.jsx';
 import ActivityLogModal from './components/ActivityLogModal.jsx';
+import SearchModal from './components/SearchModal.jsx';
 
 export default function App() {
   const [status, setStatus] = useState(null); // { setupRequired, user } | null while loading
   const [menuOpen, setMenuOpen] = useState(false);
-  const [menuModal, setMenuModal] = useState(null); // 'profile' | 'guide' | 'activity' | null
+  const [menuModal, setMenuModal] = useState(null); // 'profile' | 'guide' | 'activity' | 'search' | null
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -120,10 +121,12 @@ export default function App() {
             onOpenProfile={() => { setMenuOpen(false); setMenuModal('profile'); }}
             onOpenGuide={() => { setMenuOpen(false); setMenuModal('guide'); }}
             onOpenActivity={() => { setMenuOpen(false); setMenuModal('activity'); }}
+            onOpenSearch={() => { setMenuOpen(false); setMenuModal('search'); }}
           />
         )}
         {menuModal === 'profile' && <ProfileModal user={user} onClose={() => setMenuModal(null)} onSaved={refreshStatus} />}
         {menuModal === 'guide' && <UserGuideModal user={user} onClose={() => setMenuModal(null)} />}
+        {menuModal === 'search' && <SearchModal onClose={() => setMenuModal(null)} />}
         {menuModal === 'activity' && user.is_admin && <ActivityLogModal onClose={() => setMenuModal(null)} />}
         <div className={`main-content${isList ? ' wide fill' : ''}`}>
           <Routes>

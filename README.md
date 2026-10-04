@@ -88,7 +88,7 @@ If you find a security issue, please open a private security advisory on GitHub 
 
 ## Tech stack
 
-- Backend: Node.js 22, Fastify, better-sqlite3
+- Backend: Node.js 24, Fastify, better-sqlite3
 - Frontend: React, Vite, [Trix](https://github.com/basecamp/trix) (rich-text editor)
 - Single multi-stage Dockerfile, SQLite on a named Docker volume
 

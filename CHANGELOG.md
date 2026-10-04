@@ -3,6 +3,25 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.6.0] - 2026-10-03
+
+### Added
+- Search, opened from the menu. Type words from an entry or a tag and it lists every entry that has all of them, newest first, with a short excerpt. Click a result to open that day. It shows the newest 100 matches.
+
+### Changed
+- On a day, entries now run newest first, with the oldest at the bottom.
+- The release notes window no longer shows the logo.
+
+### Security
+- Updated the sign-in password library, the database library and the ID generator to their latest versions, and cleared two advisories in supporting packages.
+- The Docker image now runs Node.js 24, the current long-term support release.
+- Updated the build tools used in GitHub (checkout and the secret scan).
+
+### Upgrading from 0.5.0
+- Your data is kept. No database changes.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`, so the new Node.js base image is downloaded.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.5.0] - 2026-09-18
 
 ### Added
