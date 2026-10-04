@@ -6,6 +6,18 @@ import { htmlToText, logActivity, usDate } from '../activity.js';
 
 // Most entries the by-tag page returns; keep in step with LIMIT in web/src/pages/TagPage.jsx.
 const BY_TAG_LIMIT = 1000;
+// Most matches the search returns, and the length of the snippet shown for each.
+const SEARCH_LIMIT = 100;
+const SNIPPET_CHARS = 200;
+
+// A short stretch of text around the first match, so the result shows why it matched.
+function snippetAround(text, term) {
+  const flat = text.replace(/\s+/g, ' ');
+  const at = term ? flat.toLowerCase().indexOf(term) : -1;
+  const start = at > 60 ? at - 60 : 0;
+  const piece = flat.slice(start, start + SNIPPET_CHARS);
+  return `${start > 0 ? '…' : ''}${piece}${start + SNIPPET_CHARS < flat.length ? '…' : ''}`;
+}
 
 function attachTags(entry) {
   const tags = db
@@ -85,7 +97,7 @@ export default async function entryRoutes(fastify) {
          FROM entries
          JOIN users ON users.id = entries.author_id
          WHERE entries.entry_date = ?
-         ORDER BY entries.created_at ASC`
+         ORDER BY entries.created_at DESC, entries.id DESC`
       )
       .all(date);
     return rows.map(attachTags);
@@ -114,6 +126,47 @@ export default async function entryRoutes(fastify) {
       )
       .all(name, BY_TAG_LIMIT);
     return rows.map(attachTags);
+  });
+
+  // Search every entry's text and tag names, newest first. Every word typed
+  // must appear somewhere in the entry (case-insensitive). Entries are stored
+  // as HTML, so the text is matched after the markup is stripped.
+  fastify.get('/api/entries/search', { preHandler: requireAuth }, async (request, reply) => {
+    const q = typeof request.query.q === 'string' ? request.query.q.trim().toLowerCase() : '';
+    if (q.length < 2 || q.length > 100) {
+      return reply.code(400).send({ error: 'Search for 2 to 100 characters' });
+    }
+    const words = q.split(/\s+/);
+    const rows = db
+      .prepare(
+        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
+                (users.deleted_at IS NOT NULL) AS author_deleted
+         FROM entries
+         JOIN users ON users.id = entries.author_id
+         ORDER BY entries.entry_date DESC, entries.created_at DESC, entries.id DESC`
+      )
+      .all();
+    const results = [];
+    let total = 0;
+    for (const row of rows) {
+      const entry = attachTags(row);
+      const text = htmlToText(row.body, Infinity);
+      const haystack = `${text}\n${entry.tags.map((t) => t.name).join('\n')}`.toLowerCase();
+      if (!words.every((w) => haystack.includes(w))) continue;
+      total += 1;
+      if (results.length < SEARCH_LIMIT) {
+        results.push({
+          id: entry.id,
+          entry_date: entry.entry_date,
+          created_at: entry.created_at,
+          author_name: entry.author_name,
+          author_deleted: entry.author_deleted,
+          tags: entry.tags,
+          snippet: snippetAround(text, words.find((w) => text.toLowerCase().includes(w))),
+        });
+      }
+    }
+    return { total, results };
   });
 
   fastify.post('/api/entries', { preHandler: requireAuth }, async (request, reply) => {

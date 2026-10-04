@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import Modal from './Modal.jsx';
-import Logo from './Logo.jsx';
 import { CREDITS, RELEASES } from '../lib/releases.js';
 import { formatUs } from '../lib/dates.js';
 
@@ -72,7 +71,7 @@ export default function ReleaseNotesModal({ onClose }) {
   return (
     <Modal onClose={onClose} wide closeOnEscape label="Release notes and credits">
       <div className="release-head">
-        <Logo />
+        <span />
         <button type="button" className="secondary" onClick={onClose}>Close</button>
       </div>
       <div className="tabs" role="tablist" aria-label="Release notes and credits">
