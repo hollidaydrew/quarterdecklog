@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function MenuDrawer({ user, onClose, onLogout, onOpenProfile, onOpenGuide, onOpenActivity }) {
+export default function MenuDrawer({ user, onClose, onLogout, onOpenProfile, onOpenGuide, onOpenActivity, onOpenSearch }) {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose();
@@ -23,6 +23,7 @@ export default function MenuDrawer({ user, onClose, onLogout, onOpenProfile, onO
           </button>
         </div>
         <nav className="drawer-nav">
+          <button type="button" className="drawer-link" onClick={onOpenSearch}>Search</button>
           <button type="button" className="drawer-link" onClick={onOpenProfile}>My profile</button>
           <button type="button" className="drawer-link" onClick={onOpenGuide}>User Guide</button>
           {user.is_admin && (
