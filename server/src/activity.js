@@ -18,8 +18,8 @@ export function usDate(ymd) {
 }
 
 // Plain-text copy of an entry body for the activity log (line breaks kept,
-// formatting dropped, capped in length).
-export function htmlToText(html) {
+// formatting dropped, capped in length; pass Infinity to keep it all).
+export function htmlToText(html, maxChars = MAX_SNAPSHOT_CHARS) {
   const withBreaks = String(html || '').replace(/<\/(div|p|li|h[1-6]|blockquote|pre)>|<br\s*\/?>/gi, '\n');
   const stripped = sanitizeHtml(withBreaks, { allowedTags: [], allowedAttributes: {} })
     .replace(/&lt;/g, '<')
@@ -28,7 +28,7 @@ export function htmlToText(html) {
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, '&');
   const text = stripped.replace(/\n{3,}/g, '\n\n').trim();
-  return text.length > MAX_SNAPSHOT_CHARS ? `${text.slice(0, MAX_SNAPSHOT_CHARS)}…` : text;
+  return text.length > maxChars ? `${text.slice(0, maxChars)}…` : text;
 }
 
 // Records one activity. actor is a user row ({ id, display_name }) or null for

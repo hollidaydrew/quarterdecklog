@@ -23,7 +23,7 @@ export default function UserGuideModal({ user, onClose }) {
         <ul>
           <li>Sign in with the username and password you chose when you joined.</li>
           <li>Click the QuarterDeckLog logo at any time to return to the view you used last (List or Calendar).</li>
-          <li>The menu button at the top right holds My profile, this User Guide and Log out. Admins also see Activity log and Admin.</li>
+          <li>The menu button at the top right holds Search, My profile, this User Guide and Log out. Admins also see Activity log and Admin.</li>
           <li>Times are shown in your local time. Each entry shows who wrote it and the date and time it was written.</li>
         </ul>
       </Section>
@@ -35,6 +35,8 @@ export default function UserGuideModal({ user, onClose }) {
           <li><strong>Calendar view:</strong> click a day to open it. A dot marks days that have entries.</li>
           <li>Switch between List and Calendar with the buttons at the top of the page. The app remembers your choice.</li>
           <li>On a phone, choose a date from the drop-down instead of the list.</li>
+          <li>Entries on a day run newest first, with the oldest at the bottom.</li>
+          <li><strong>Search:</strong> open the menu and choose Search, then type words from an entry or a tag. Only entries with every word are listed. Click a result to open that day.</li>
         </ul>
       </Section>
 
