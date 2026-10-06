@@ -6,6 +6,8 @@ import { htmlToText, logActivity, usDate } from '../activity.js';
 
 // Most entries the by-tag page returns; keep in step with LIMIT in web/src/pages/TagPage.jsx.
 const BY_TAG_LIMIT = 1000;
+// Most entries the Rollup page returns for one date range.
+const ROLLUP_LIMIT = 5000;
 // Most matches the search returns, and the length of the snippet shown for each.
 const SEARCH_LIMIT = 100;
 const SNIPPET_CHARS = 200;
@@ -83,6 +85,29 @@ export default async function entryRoutes(fastify) {
     const counts = {};
     for (const row of rows) counts[row.entry_date] = row.count;
     return counts;
+  });
+
+  // Every entry in a date range, newest day first (and newest first within a
+  // day, like the day view). Feeds the Rollup page. `truncated` is true when
+  // the range holds more than ROLLUP_LIMIT entries and the oldest were left out.
+  fastify.get('/api/entries/rollup', { preHandler: requireAuth }, async (request, reply) => {
+    const { from, to } = request.query;
+    if (!isValidDateString(from) || !isValidDateString(to) || from > to) {
+      return reply.code(400).send({ error: 'from and to must be valid YYYY-MM-DD dates, with from on or before to' });
+    }
+    const rows = db
+      .prepare(
+        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
+                (users.deleted_at IS NOT NULL) AS author_deleted
+         FROM entries
+         JOIN users ON users.id = entries.author_id
+         WHERE entries.entry_date >= ? AND entries.entry_date <= ?
+         ORDER BY entries.entry_date DESC, entries.created_at DESC, entries.id DESC
+         LIMIT ?`
+      )
+      .all(from, to, ROLLUP_LIMIT + 1);
+    const truncated = rows.length > ROLLUP_LIMIT;
+    return { entries: rows.slice(0, ROLLUP_LIMIT).map(attachTags), truncated };
   });
 
   fastify.get('/api/entries', { preHandler: requireAuth }, async (request, reply) => {

@@ -3,6 +3,17 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.7.0] - 2026-10-06
+
+### Added
+- Entries check box on the List, next to the List, Calendar and Rollup buttons. Check it to hide the dates that have no entries. The date filter still applies.
+- Year, Q1, Q2, Q3 and Q4 buttons under the date button on the List. One click sets the dates to that year or quarter. They use the year of the dates you are showing (this year when none are picked). A quarter that has not started yet is turned off, and a range that includes today ends today.
+- Rollup, a new button next to List and Calendar. It lists every entry in a date range, newest day first, with the same date button and Year/quarter buttons. Print / PDF (the whole range, up to 1,000 entries) opens your browser's print window (choose Save as PDF there), and Export CSV (also the whole range) downloads a spreadsheet with one row per entry. The page shows 20 entries at a time; a drop-down lets you pick more or fewer per page. It shows the newest 5,000 entries of a range.
+
+### Upgrading from 0.6.0
+- Your data is kept. No database changes.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`.
+
 ## [0.6.0] - 2026-10-03
 
 ### Added
