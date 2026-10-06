@@ -5,6 +5,7 @@ import SetupPage from './pages/SetupPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import JoinPage from './pages/JoinPage.jsx';
 import ChangePasswordPage from './pages/ChangePasswordPage.jsx';
+import RollupPage from './pages/RollupPage.jsx';
 import CalendarPage from './pages/CalendarPage.jsx';
 import ListPage from './pages/ListPage.jsx';
 import DayView from './pages/DayView.jsx';
@@ -132,6 +133,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Navigate to={user.preferred_view === 'calendar' ? '/calendar' : '/list'} replace />} />
             <Route path="/list/:date?" element={<ListPage user={user} onViewUsed={rememberView} />} />
+            <Route path="/rollup" element={<RollupPage />} />
             <Route path="/calendar" element={<CalendarPage user={user} onViewUsed={rememberView} />} />
             <Route path="/day/:date" element={<DayView user={user} onViewUsed={rememberView} />} />
             <Route path="/tag/:slug" element={<TagPage user={user} />} />

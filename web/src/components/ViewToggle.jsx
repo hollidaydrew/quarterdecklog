@@ -1,14 +1,19 @@
 import { Link } from 'react-router-dom';
 
+const VIEWS = [
+  { key: 'list', to: '/list', label: 'List' },
+  { key: 'calendar', to: '/calendar', label: 'Calendar' },
+  { key: 'rollup', to: '/rollup', label: 'Rollup' },
+];
+
 export default function ViewToggle({ current }) {
   return (
     <div className="view-toggle" role="group" aria-label="Log view">
-      <Link to="/list" className={current === 'list' ? 'active' : ''} aria-current={current === 'list' ? 'page' : undefined}>
-        List
-      </Link>
-      <Link to="/calendar" className={current === 'calendar' ? 'active' : ''} aria-current={current === 'calendar' ? 'page' : undefined}>
-        Calendar
-      </Link>
+      {VIEWS.map(({ key, to, label }) => (
+        <Link key={key} to={to} className={current === key ? 'active' : ''} aria-current={current === key ? 'page' : undefined}>
+          {label}
+        </Link>
+      ))}
     </div>
   );
 }
