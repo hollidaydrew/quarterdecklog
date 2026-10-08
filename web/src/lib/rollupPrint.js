@@ -21,7 +21,8 @@ const STYLE = `
 
 // A plain, self-contained HTML page for the print dialog. Entry bodies are
 // already sanitized on the server; everything else is escaped here.
-export function buildPrintHtml(entries, from, to, filterText = '') {
+// title: the page heading; summary: what the list is narrowed by (may be empty).
+export function buildPrintHtml(entries, title, summary = '') {
   const parts = [];
   let day = null;
   for (const e of entries) {
@@ -36,15 +37,19 @@ export function buildPrintHtml(entries, from, to, filterText = '') {
         `<div class="body">${e.body}</div>${tags}</div>`
     );
   }
-  const title = `Rollup: ${formatUs(from)} to ${formatUs(to)}`;
   return (
     `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>${STYLE}</style></head>` +
-    `<body><h1>${escapeHtml(title)}</h1><p class="count">${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}${filterText ? ` (${escapeHtml(filterText)})` : ''}</p>${parts.join('')}</body></html>`
+    `<body><h1>${escapeHtml(title)}</h1><p class="count">${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}${summary ? ` (${escapeHtml(summary)})` : ''}</p>${parts.join('')}</body></html>`
   );
 }
 
 // Print the entries from a hidden iframe, so none of this touches the app's own page.
 export function printRollup(entries, from, to, filterText = '') {
+  printEntries(entries, `Rollup: ${formatUs(from)} to ${formatUs(to)}`, filterText);
+}
+
+// Prints any list of entries (Rollup or Search).
+export function printEntries(entries, title, summary = '') {
   const frame = document.createElement('iframe');
   frame.setAttribute('aria-hidden', 'true');
   frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
@@ -55,6 +60,6 @@ export function printRollup(entries, from, to, filterText = '') {
     win.focus();
     win.print();
   };
-  frame.srcdoc = buildPrintHtml(entries, from, to, filterText);
+  frame.srcdoc = buildPrintHtml(entries, title, summary);
   document.body.appendChild(frame);
 }

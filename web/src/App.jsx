@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import JoinPage from './pages/JoinPage.jsx';
 import ChangePasswordPage from './pages/ChangePasswordPage.jsx';
 import RollupPage from './pages/RollupPage.jsx';
+import SearchPage from './pages/SearchPage.jsx';
 import CalendarPage from './pages/CalendarPage.jsx';
 import ListPage from './pages/ListPage.jsx';
 import DayView from './pages/DayView.jsx';
@@ -17,7 +18,6 @@ import MenuDrawer from './components/MenuDrawer.jsx';
 import ProfileModal from './components/ProfileModal.jsx';
 import UserGuideModal from './components/UserGuideModal.jsx';
 import ActivityLogModal from './components/ActivityLogModal.jsx';
-import SearchModal from './components/SearchModal.jsx';
 import PinnedNotes from './components/PinnedNotes.jsx';
 import SinceBanner from './components/SinceBanner.jsx';
 import DeviceNotice from './components/DeviceNotice.jsx';
@@ -25,7 +25,7 @@ import DeviceNotice from './components/DeviceNotice.jsx';
 export default function App() {
   const [status, setStatus] = useState(null); // { setupRequired, user } | null while loading
   const [menuOpen, setMenuOpen] = useState(false);
-  const [menuModal, setMenuModal] = useState(null); // 'profile' | 'guide' | 'activity' | 'search' | null
+  const [menuModal, setMenuModal] = useState(null); // 'profile' | 'guide' | 'activity' | null
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -128,12 +128,10 @@ export default function App() {
             onOpenProfile={() => { setMenuOpen(false); setMenuModal('profile'); }}
             onOpenGuide={() => { setMenuOpen(false); setMenuModal('guide'); }}
             onOpenActivity={() => { setMenuOpen(false); setMenuModal('activity'); }}
-            onOpenSearch={() => { setMenuOpen(false); setMenuModal('search'); }}
           />
         )}
         {menuModal === 'profile' && <ProfileModal user={user} onClose={() => setMenuModal(null)} onSaved={refreshStatus} />}
         {menuModal === 'guide' && <UserGuideModal user={user} onClose={() => setMenuModal(null)} />}
-        {menuModal === 'search' && <SearchModal onClose={() => setMenuModal(null)} />}
         {menuModal === 'activity' && user.is_admin && <ActivityLogModal onClose={() => setMenuModal(null)} />}
         <div className={`main-content${isList ? ' wide fill' : ''}`}>
           {status.mfa && status.mfa.showDeviceWarning && (
@@ -145,6 +143,7 @@ export default function App() {
             <Route path="/" element={<Navigate to={user.preferred_view === 'calendar' ? '/calendar' : '/list'} replace />} />
             <Route path="/list/:date?" element={<ListPage user={user} onViewUsed={rememberView} />} />
             <Route path="/rollup" element={<RollupPage />} />
+            <Route path="/search" element={<SearchPage />} />
             <Route path="/calendar" element={<CalendarPage user={user} onViewUsed={rememberView} />} />
             <Route path="/day/:date" element={<DayView user={user} onViewUsed={rememberView} />} />
             <Route path="/tag/:slug" element={<TagPage user={user} />} />

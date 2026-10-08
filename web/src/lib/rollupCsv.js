@@ -41,6 +41,11 @@ export function rollupToCsv(entries) {
   return `﻿${lines.join('\r\n')}\r\n`;
 }
 
+// Any list of entries (Rollup or Search) as a spreadsheet file.
+export function downloadEntriesCsv(entries, filename) {
+  downloadCsv(filename, rollupToCsv(entries));
+}
+
 export function downloadRollupCsv(entries, from, to, filtered = false) {
-  downloadCsv(`quarterdecklog-rollup-${from}-to-${to}${filtered ? '-filtered' : ''}.csv`, rollupToCsv(entries));
+  downloadEntriesCsv(entries, `quarterdecklog-rollup-${from}-to-${to}${filtered ? '-filtered' : ''}.csv`);
 }
