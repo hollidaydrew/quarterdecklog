@@ -4,8 +4,8 @@ import { CREDITS, RELEASES } from '../lib/releases.js';
 import { formatUs } from '../lib/dates.js';
 import { releasesFor } from '../lib/releaseNotes.js';
 
-function ReleaseList({ isAdmin }) {
-  const releases = releasesFor(RELEASES, isAdmin);
+function ReleaseList() {
+  const releases = releasesFor(RELEASES);
   return (
     <>
       {releases.length === 0 && <p className="muted">No release notes yet.</p>}
@@ -68,8 +68,7 @@ function CreditsList() {
   );
 }
 
-// isAdmin: admins also see the server upgrade steps; everyone else does not.
-export default function ReleaseNotesModal({ onClose, isAdmin = false }) {
+export default function ReleaseNotesModal({ onClose }) {
   const [tab, setTab] = useState('notes');
 
   return (
@@ -86,7 +85,7 @@ export default function ReleaseNotesModal({ onClose, isAdmin = false }) {
           Credits
         </button>
       </div>
-      <div role="tabpanel">{tab === 'notes' ? <ReleaseList isAdmin={isAdmin} /> : <CreditsList />}</div>
+      <div role="tabpanel">{tab === 'notes' ? <ReleaseList /> : <CreditsList />}</div>
     </Modal>
   );
 }
