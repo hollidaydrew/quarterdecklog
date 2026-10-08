@@ -4,6 +4,7 @@ import DateRangePicker from '../components/DateRangePicker.jsx';
 import EntryCard from '../components/EntryCard.jsx';
 import QuickRanges from '../components/QuickRanges.jsx';
 import ViewToggle from '../components/ViewToggle.jsx';
+import TagChip from '../components/TagChip.jsx';
 import { downloadRollupCsv } from '../lib/rollupCsv.js';
 import { PRINT_LIMIT, printRollup } from '../lib/rollupPrint.js';
 import { formatUs, weekdayName, todayStr } from '../lib/dates.js';
@@ -25,21 +26,38 @@ export default function RollupPage() {
   const [error, setError] = useState('');
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [page, setPage] = useState(1);
+  const [allTags, setAllTags] = useState([]);
+  const [authors, setAuthors] = useState([]);
+  const [tagIds, setTagIds] = useState([]); // an entry with ANY of these stays, like the day view
+  const [authorId, setAuthorId] = useState('');
 
-  useEffect(() => setPage(1), [from, to, pageSize]);
+  useEffect(() => {
+    api.get('/api/tags').then(setAllTags).catch(() => {});
+    api.get('/api/entries/authors').then(setAuthors).catch(() => {});
+  }, []);
+
+  const toggleTag = (id) => setTagIds((ids) => (ids.includes(id) ? ids.filter((t) => t !== id) : [...ids, id]));
+  const filtered = tagIds.length > 0 || authorId !== '';
+  const filterText = [
+    tagIds.length ? `Tag: ${allTags.filter((t) => tagIds.includes(t.id)).map((t) => t.name).join(', ')}` : '',
+    authorId !== '' ? `Person: ${(authors.find((a) => String(a.id) === authorId) || {}).name || ''}` : '',
+  ].filter(Boolean).join(' / ');
+  const tagKey = tagIds.join(',');
+
+  useEffect(() => setPage(1), [from, to, pageSize, tagKey, authorId]);
 
   useEffect(() => {
     let cancelled = false;
     setData(null);
     setError('');
     api
-      .get(`/api/entries/rollup?from=${from}&to=${to}`)
+      .get(`/api/entries/rollup?from=${from}&to=${to}${tagKey ? `&tag_ids=${tagKey}` : ''}${authorId !== '' ? `&author_id=${authorId}` : ''}`)
       .then((d) => !cancelled && setData(d))
       .catch((e) => !cancelled && setError(e.message || 'Could not load entries.'));
     return () => {
       cancelled = true;
     };
-  }, [from, to]);
+  }, [from, to, tagKey, authorId]);
 
   const count = data ? data.entries.length : 0;
   const pages = Math.max(1, Math.ceil(count / pageSize));
@@ -86,15 +104,34 @@ export default function RollupPage() {
           <QuickRanges value={range} onChange={setRange} />
         </div>
         <div className="rollup-actions">
-          <button type="button" className="secondary" disabled={!count || count > PRINT_LIMIT} onClick={() => printRollup(data.entries, from, to)}>Print / PDF</button>
-          <button type="button" className="secondary" disabled={!count} onClick={() => downloadRollupCsv(data.entries, from, to)}>Export CSV</button>
+          <button type="button" className="secondary" disabled={!count || count > PRINT_LIMIT} onClick={() => printRollup(data.entries, from, to, filterText)}>Print / PDF</button>
+          <button type="button" className="secondary" disabled={!count} onClick={() => downloadRollupCsv(data.entries, from, to, filtered)}>Export CSV</button>
         </div>
       </div>
 
+      {(allTags.length > 0 || authors.length > 1) && (
+        <div className="filter-bar no-print">
+          {allTags.map((tag) => (
+            <TagChip key={tag.id} tag={tag} outline active={tagIds.includes(tag.id)} onClick={() => toggleTag(tag.id)} />
+          ))}
+          {authors.length > 1 && (
+            <select value={authorId} onChange={(e) => setAuthorId(e.target.value)} aria-label="Person">
+              <option value="">Everyone</option>
+              {authors.map((a) => (
+                <option key={a.id} value={a.id}>{a.name}{a.deleted ? ' (deleted user)' : ''}</option>
+              ))}
+            </select>
+          )}
+          {filtered && (
+            <button type="button" className="secondary" style={{ padding: '4px 10px' }} onClick={() => { setTagIds([]); setAuthorId(''); }}>Clear filters</button>
+          )}
+        </div>
+      )}
       <h1 className="rollup-title">Rollup: {formatUs(from)} to {formatUs(to)}</h1>
       {error && <p className="error-text" role="alert">{error}</p>}
       {!ready && !error && <p className="muted">Loading…</p>}
-      {ready && count === 0 && <p className="muted">No entries in this range.</p>}
+      {filtered && <p className="muted rollup-count">Filtered: {filterText}</p>}
+      {ready && count === 0 && <p className="muted">{filtered ? 'No entries match these filters in this range.' : 'No entries in this range.'}</p>}
       {ready && count > 0 && (
         <p className="muted rollup-count">
           {count} {count === 1 ? 'entry' : 'entries'} on {days.length} {days.length === 1 ? 'day' : 'days'}

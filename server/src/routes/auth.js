@@ -21,6 +21,7 @@ export default async function authRoutes(fastify) {
     return {
       setupRequired: userCount === 0,
       user: user ? publicUser(user) : null,
+      previousLoginAt: user ? request.session.previousLoginAt || null : null,
       // Only admins are told; it decides whether the API Docs link is shown.
       apiEnabled: !!(user && user.is_admin && API_ENABLED),
     };
@@ -73,6 +74,9 @@ export default async function authRoutes(fastify) {
       }
 
       request.session.userId = user.id;
+      // The sign-in time before this one; the "since you last signed in" banner
+      // uses it (null on a first sign-in).
+      request.session.previousLoginAt = user.last_login_at || null;
       db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
       logActivity(user, 'sign_in', `${user.display_name} signed in`);
       return publicUser(user);
