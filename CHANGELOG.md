@@ -3,6 +3,19 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.11.3] - 2026-10-08
+
+### Fixed
+- Admin, Tags no longer lets you add a second tag whose name differs only by capital letters (for example "outage" next to "Outage").
+
+### Changed
+- Admin, Tags is now a table: each tag with its color (a swatch and its code), how many entries use it, and Color and Delete buttons. Deleting asks how many entries will lose the tag. Adding a tag sits on one line above the table.
+
+### Upgrading from 0.11.2
+- Your data is kept. No database changes.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.11.2] - 2026-10-08
 
 ### Changed
