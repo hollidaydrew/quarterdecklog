@@ -40,7 +40,9 @@ export default async function userRoutes(fastify) {
          WHERE u.deleted_at IS NULL AND u.is_system = 0
          ORDER BY u.created_at ASC, u.id ASC`
       )
-      .all();
+      .all()
+      // The database answers yes/no questions with 0 and 1; send real true/false.
+      .map((u) => ({ ...u, mfa_enrolled: !!u.mfa_enrolled, mfa_locked: !!u.mfa_locked }));
   });
 
   // Edit a team member's display name, username and admin role. (Everyone can
