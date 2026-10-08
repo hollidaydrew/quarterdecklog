@@ -5,12 +5,11 @@ import { formatUs, weekdayName } from '../lib/dates.js';
 export const PAGE_SIZES = [10, 20, 50, 100, 250, 500, 1000, 5000];
 const DEFAULT_PAGE_SIZE = 20;
 
-// One slim line. By default only the Per page choice shows (and only when there
-// are more entries than the smallest page). Choose a number that splits the
-// results into pages and the rest comes back: which entries are showing, and
-// Previous / Next. The line repeats below the list when there is more than one
-// page, without the Per page choice.
-function Pager({ count, pageSize, onPageSize, page, pages, onPage, withSize = true }) {
+// Two pieces, in two places. ABOVE the entries: only the Per page choice (when
+// there are more entries than the smallest page). BELOW the entries: which ones
+// are showing and Previous / Next, only when the Per page choice has split the
+// results into more than one page.
+function Pager({ count, pageSize, onPageSize, page, pages, onPage, withSize = true, withPaging = true }) {
   const first = (page - 1) * pageSize + 1;
   const last = Math.min(count, page * pageSize);
   return (
@@ -23,7 +22,7 @@ function Pager({ count, pageSize, onPageSize, page, pages, onPage, withSize = tr
           </select>
         </label>
       )}
-      {pages > 1 && (
+      {withPaging && pages > 1 && (
         <>
           <span className="pager-range">{first}-{last} of {count}</span>
           <button type="button" className="secondary" disabled={page <= 1} onClick={() => onPage(page - 1)}>Previous</button>
@@ -84,7 +83,7 @@ export default function ResultsList({ title, summary, actions, notice, entries, 
 
       {count === 0 && <p className="muted results-empty">{emptyText}</p>}
       {count > PAGE_SIZES[0] && (
-        <Pager count={count} pageSize={pageSize} onPageSize={setPageSize} page={current} pages={pages} onPage={setPage} />
+        <Pager count={count} pageSize={pageSize} onPageSize={setPageSize} page={current} pages={pages} onPage={setPage} withPaging={false} />
       )}
 
       {days.map((day) => (
