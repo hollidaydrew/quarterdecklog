@@ -4,6 +4,7 @@ import { db } from '../db.js';
 import { requireAdmin } from '../middleware/auth.js';
 import { logActivity } from '../activity.js';
 import { parseProfileFields } from '../utils/profile.js';
+import { clearMfa, revokeDevices } from '../mfa.js';
 
 // No look-alike characters (0/O, 1/l/I) so a temporary password can be read
 // aloud or typed from a chat message without mistakes.
@@ -31,6 +32,8 @@ export default async function userRoutes(fastify) {
     return db
       .prepare(
         `SELECT u.id, u.username, u.display_name, u.is_admin, u.must_change_password, u.created_at, u.last_login_at,
+                (u.mfa_enabled_at IS NOT NULL) AS mfa_enrolled,
+                (u.mfa_locked_until IS NOT NULL AND u.mfa_locked_until > datetime('now')) AS mfa_locked,
                 inviter.display_name AS invited_by_name
          FROM users u
          LEFT JOIN users inviter ON inviter.id = u.invited_by
@@ -109,6 +112,7 @@ export default async function userRoutes(fastify) {
       password_hash,
       target.id
     );
+    revokeDevices(target.id);
     logActivity(request.user, 'password_reset', `${request.user.display_name} reset ${target.display_name}'s password`, {
       user: target.display_name,
     });
@@ -133,6 +137,7 @@ export default async function userRoutes(fastify) {
     db.transaction(() => {
       // Invites this person created stop working along with their account.
       db.prepare('DELETE FROM invites WHERE created_by = ?').run(target.id);
+      clearMfa(target.id);
       db.prepare(
         `UPDATE users
          SET deleted_at = datetime('now'), username = ?, password_hash = '!', is_admin = 0, must_change_password = 0
