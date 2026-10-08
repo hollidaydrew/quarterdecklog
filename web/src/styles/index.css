@@ -967,6 +967,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .tag-table th:last-child, .tag-table td:last-child { padding-right: 0; }
 .tag-table .col-uses { font-variant-numeric: tabular-nums; color: var(--color-text-muted); }
 .tag-table .uses-word { display: none; }
+.tag-table .col-uses a { color: var(--color-primary-dark); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.tag-table .col-uses a:hover { color: var(--color-text); }
 .tag-table .col-color { white-space: nowrap; }
 .tag-table .col-color input[type='color'] { width: 46px; height: 30px; padding: 2px; }
 .tag-table .col-actions { width: 1%; white-space: nowrap; }

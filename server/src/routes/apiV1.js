@@ -212,8 +212,22 @@ export default async function apiV1Routes(fastify) {
     staticCSP: CSP,
     // The default top bar carries another project's logo and a box for loading
     // any spec URL; neither belongs here.
-    theme: { title: 'API Docs', css: [{ filename: 'qdl.css', content: '.swagger-ui .topbar { display: none; }' }] },
-    uiConfig: { docExpansion: 'list', deepLinking: false, persistAuthorization: false },
+    // A reference page only: the top bar, the Authorize button and the lock icons are
+    // hidden, and Try it out is turned off (it needs a key entered through
+    // Authorize). Keys are made in Admin, API keys.
+    theme: {
+      title: 'API Docs',
+      css: [
+        {
+          filename: 'qdl.css',
+          content:
+            '.swagger-ui .topbar { display: none; } ' +
+            '.swagger-ui .scheme-container { display: none; } ' +
+            '.swagger-ui .authorization__btn { display: none; }',
+        },
+      ],
+    },
+    uiConfig: { docExpansion: 'list', deepLinking: false, persistAuthorization: false, supportedSubmitMethods: [] },
   });
 
   // Same {error} shape as the rest of the app, and never any internal detail
