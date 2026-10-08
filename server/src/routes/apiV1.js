@@ -4,7 +4,7 @@ import { db, SYSTEM_USER_ID } from '../db.js';
 import { requireAdmin } from '../middleware/auth.js';
 import { requireApiKey } from '../middleware/apiKey.js';
 import { sanitizeEntryBody } from '../utils/sanitize.js';
-import { isValidDateString } from '../utils/date.js';
+import { isValidDateString, isFutureEntryDate } from '../utils/date.js';
 import { htmlToText, logActivity, usDate, APP_VERSION } from '../activity.js';
 import { attachTags, entrySnapshot, tagNamesFor } from './entries.js';
 import { CSP } from '../csp.js';
@@ -380,7 +380,11 @@ export default async function apiV1Routes(fastify) {
           type: 'object',
           required: ['entry_date'],
           properties: {
-            entry_date: { type: 'string', description: 'The day the entry belongs to, YYYY-MM-DD' },
+            entry_date: {
+              type: 'string',
+              description:
+                "The day the entry belongs to, YYYY-MM-DD. Today or an earlier day; a date after tomorrow's UTC date is refused, because the log records the past.",
+            },
             ...bodyFields,
           },
         },
@@ -391,6 +395,9 @@ export default async function apiV1Routes(fastify) {
       const { entry_date } = request.body;
       if (!isValidDateString(entry_date)) {
         return reply.code(400).send({ error: 'entry_date must be a valid YYYY-MM-DD date' });
+      }
+      if (isFutureEntryDate(entry_date)) {
+        return reply.code(400).send({ error: "Entries can't be dated in the future" });
       }
       const built = buildBody(request.body);
       if (built.error) return reply.code(400).send({ error: built.error });

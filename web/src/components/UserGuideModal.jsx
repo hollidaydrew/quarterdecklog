@@ -33,7 +33,7 @@ export default function UserGuideModal({ user, onClose }) {
           <li><strong>List view:</strong> dates run down the left, newest first. A bold date with a number has that many entries. A gray date has none. Click a date to see its entries on the right. The up and down arrow keys move between dates.</li>
           <li><strong>Filter the list:</strong> click the date button above the list. Choose Single day or Date range, then click the day or days. Reset returns to every date this year.</li>
           <li><strong>Quick filters:</strong> under the date button, Year, Q1, Q2, Q3 and Q4 set the dates to that year or quarter. Check Entries beside the List and Calendar buttons to hide dates with no entries.</li>
-          <li><strong>Calendar view:</strong> click a day to open it. A dot marks days that have entries.</li>
+          <li><strong>Calendar view:</strong> click a day to open it. A dot marks days that have entries. Days after today are greyed out: the log records the past, so entries can only be added for today and earlier days.</li>
           <li>Switch between List and Calendar with the buttons at the top of the page. The app remembers your choice.</li>
           <li><strong>Rollup:</strong> click Rollup at the top of the page to see every entry in a date range. It shows 20 entries per page; change that with the Per page drop-down. Print / PDF (choose Save as PDF in the print window; up to 1,000 entries, so pick a shorter range for more) and Export CSV (any size) cover the whole range, not just the page you see.</li>
           <li>On a phone, choose a date from the drop-down instead of the list.</li>
