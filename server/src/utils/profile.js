@@ -1,4 +1,5 @@
 import { db } from '../db.js';
+import { isReservedDisplayName } from './reservedNames.js';
 
 export const MAX_DISPLAY_NAME = 100;
 export const MAX_USERNAME = 64;
@@ -17,6 +18,9 @@ export function parseProfileFields(body, current) {
     }
     if (display_name.trim().length > MAX_DISPLAY_NAME) {
       return { status: 400, error: `Display name can be at most ${MAX_DISPLAY_NAME} characters` };
+    }
+    if (display_name.trim().toLowerCase() !== current.display_name.toLowerCase() && isReservedDisplayName(display_name)) {
+      return { status: 409, error: 'That name is reserved' };
     }
     next.display_name = display_name.trim();
   }

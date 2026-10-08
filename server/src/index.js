@@ -15,6 +15,10 @@ import userRoutes from './routes/users.js';
 import meRoutes from './routes/me.js';
 import activityRoutes from './routes/activity.js';
 import { recordVersionOnStart } from './activity.js';
+import { CSP } from './csp.js';
+import apiKeyRoutes from './routes/apiKeys.js';
+import apiV1Routes from './routes/apiV1.js';
+import { API_ENABLED } from './config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 7272;
@@ -36,18 +40,7 @@ fastify.decorateRequest('user', null);
 // load only its own scripts, styles, images and data; inline styles are
 // allowed because the editor and saved entries use them. API responses are
 // never cached, since they hold private team data.
-const CSP = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
-  "font-src 'self'",
-  "connect-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-].join('; ');
+
 
 fastify.addHook('onSend', async (request, reply, payload) => {
   reply.header('Content-Security-Policy', CSP);
@@ -70,6 +63,10 @@ await fastify.register(session, {
     sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   },
+  // Only store a session once something is put in it (a sign-in). Without
+  // this, every API call that carries no cookie would create a session in
+  // memory that is never used again.
+  saveUninitialized: false,
 });
 
 await fastify.register(authRoutes);
@@ -80,6 +77,8 @@ await fastify.register(userRoutes);
 await fastify.register(meRoutes);
 recordVersionOnStart();
 await fastify.register(activityRoutes);
+await fastify.register(apiKeyRoutes);
+if (API_ENABLED) await fastify.register(apiV1Routes);
 
 // Serves the built React app. In the Docker image this is populated by the
 // frontend build stage; see ../Dockerfile.

@@ -3,6 +3,8 @@ import { db } from '../db.js';
 import { loadSessionUser, requireSession } from '../middleware/auth.js';
 import { publicUser } from '../utils/publicUser.js';
 import { logActivity } from '../activity.js';
+import { isReservedDisplayName } from '../utils/reservedNames.js';
+import { API_ENABLED } from '../config.js';
 
 function findOpenInvite(token) {
   const invite = db.prepare('SELECT * FROM invites WHERE token = ?').get(token);
@@ -13,19 +15,21 @@ function findOpenInvite(token) {
 export default async function authRoutes(fastify) {
   // Tells the frontend whether to show the first-run "create admin" screen
   fastify.get('/api/auth/status', async (request) => {
-    const userCount = db.prepare('SELECT COUNT(*) AS n FROM users').get().n;
+    const userCount = db.prepare('SELECT COUNT(*) AS n FROM users WHERE is_system = 0').get().n;
     const user = loadSessionUser(request);
     if (!user && request.session.userId) await request.session.destroy();
     return {
       setupRequired: userCount === 0,
       user: user ? publicUser(user) : null,
+      // Only admins are told; it decides whether the API Docs link is shown.
+      apiEnabled: !!(user && user.is_admin && API_ENABLED),
     };
   });
 
   // First-run only: creates the sole admin account. Refuses once any user exists,
   // so this can never be used to create a second admin later.
   fastify.post('/api/auth/setup', async (request, reply) => {
-    const userCount = db.prepare('SELECT COUNT(*) AS n FROM users').get().n;
+    const userCount = db.prepare('SELECT COUNT(*) AS n FROM users WHERE is_system = 0').get().n;
     if (userCount > 0) {
       return reply.code(403).send({ error: 'Setup has already been completed' });
     }
@@ -57,7 +61,7 @@ export default async function authRoutes(fastify) {
       }
 
       const user = db
-        .prepare('SELECT * FROM users WHERE username = ? AND deleted_at IS NULL')
+        .prepare('SELECT * FROM users WHERE username = ? AND deleted_at IS NULL AND is_system = 0')
         .get(username.trim());
       // Always run argon2.verify, even with a dummy hash, so login timing
       // doesn't reveal whether a username exists.
@@ -142,6 +146,10 @@ export default async function authRoutes(fastify) {
     const { username, display_name, password } = request.body || {};
     if (!username || !display_name || !password || password.length < 8) {
       return reply.code(400).send({ error: 'Username, display name, and a password of at least 8 characters are required' });
+    }
+
+    if (isReservedDisplayName(display_name)) {
+      return reply.code(409).send({ error: 'That name is reserved' });
     }
 
     const password_hash = await argon2.hash(password);

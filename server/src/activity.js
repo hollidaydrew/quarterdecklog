@@ -51,7 +51,7 @@ export function logActivity(actor, action, summary, details = null) {
 export function recordVersionOnStart(version = APP_VERSION) {
   const row = db.prepare("SELECT value FROM app_meta WHERE key = 'version'").get();
   if (row && row.value === version) return;
-  const hasUsers = db.prepare('SELECT COUNT(*) AS n FROM users').get().n > 0;
+  const hasUsers = db.prepare('SELECT COUNT(*) AS n FROM users WHERE is_system = 0').get().n > 0;
   let summary;
   if (row) summary = `Updated from v${row.value} to v${version}`;
   else summary = hasUsers ? `Updated to v${version}` : `Installed v${version}`;

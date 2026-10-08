@@ -290,6 +290,142 @@ function UserRoster({ currentUser, onSelfChanged }) {
   );
 }
 
+function NewKeyModal({ created, onClose }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(created.key);
+      setCopied(true);
+    } catch {
+      // Clipboard needs HTTPS; the key is shown to copy by hand.
+    }
+  };
+  return (
+    <Modal onClose={onClose} label="New API key">
+      <div className="stack">
+        <h3 style={{ margin: 0 }}>API key "{created.name}"</h3>
+        <code className="temp-password" style={{ wordBreak: 'break-all' }}>{created.key}</code>
+        <p className="muted" style={{ margin: 0 }}>
+          Copy it now and keep it private, like a password. This is the only time it's shown; if it's lost, revoke it and make a new one.
+        </p>
+        <div className="modal-actions">
+          <button type="button" className="secondary" onClick={copy}>{copied ? 'Copied' : 'Copy key'}</button>
+          <button type="button" onClick={onClose}>Done</button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function ApiKeyManager() {
+  const [info, setInfo] = useState(null); // { enabled, keys } | null while loading
+  const [name, setName] = useState('');
+  const [scope, setScope] = useState('read');
+  const [expires, setExpires] = useState('');
+  const [created, setCreated] = useState(null);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(() => api.get('/api/admin/api-keys').then(setInfo).catch((err) => setError(err.message)), []);
+  useEffect(() => { load(); }, [load]);
+
+  const create = async (e) => {
+    e.preventDefault();
+    setError('');
+    setBusy(true);
+    try {
+      const key = await api.post('/api/admin/api-keys', {
+        name,
+        scope,
+        expires_in_days: expires ? Number(expires) : null,
+      });
+      setCreated(key);
+      setName('');
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
+    setBusy(false);
+  };
+
+  const revoke = async (key) => {
+    if (!confirm(`Revoke the "${key.name}" key? Anything using it stops working immediately.`)) return;
+    setError('');
+    try {
+      await api.del(`/api/admin/api-keys/${key.id}`);
+    } catch (err) {
+      setError(err.message);
+    }
+    load();
+  };
+
+  if (!info) return error ? <p className="error-text">{error}</p> : null;
+
+  return (
+    <div>
+      {info.enabled ? (
+        <p className="muted" style={{ marginTop: 0 }}>
+          Keys let scripts and other systems add and read entries and tags. Entries they add belong to "System", and the Activity log shows the key's name.{' '}
+          <a href="/api/docs/" target="_blank" rel="noopener">API Docs</a>
+        </p>
+      ) : (
+        <p className="muted" style={{ marginTop: 0 }}>
+          The API is turned off. To use it, set <code>API_ENABLED=true</code> in the server's <code>.env</code> file and restart the container.
+        </p>
+      )}
+      {info.enabled && (
+        <form onSubmit={create} className="stack" style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              placeholder="Friendly name (e.g. Nagios, Backup script)"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={60}
+              required
+              style={{ flex: '1 1 220px' }}
+            />
+            <select value={scope} onChange={(e) => setScope(e.target.value)} aria-label="Access" style={{ width: 'auto' }}>
+              <option value="read">Read only</option>
+              <option value="write">Read and write</option>
+            </select>
+            <select value={expires} onChange={(e) => setExpires(e.target.value)} aria-label="Expires" style={{ width: 'auto' }}>
+              <option value="">Never expires</option>
+              <option value="30">Expires in 30 days</option>
+              <option value="90">Expires in 90 days</option>
+              <option value="365">Expires in 1 year</option>
+            </select>
+            <button type="submit" disabled={busy}>Create key</button>
+          </div>
+        </form>
+      )}
+      {error && <p className="error-text">{error}</p>}
+      {info.keys.length === 0 && <p className="muted">No API keys yet.</p>}
+      {info.keys.map((k) => (
+        <div key={k.id} className="list-row user-row">
+          <span className="user-info">
+            <span>
+              {k.name}{' '}
+              <span className="muted">
+                {k.scope === 'write' ? 'read and write' : 'read only'} · {k.key_prefix}…
+                {k.expired ? ' · expired' : k.expires_at ? ` · expires ${formatUsFromDate(new Date(k.expires_at))}` : ''}
+              </span>
+            </span>
+            <span className="muted last-login">
+              Created by {k.created_by_name} on {formatDateTimeShort(k.created_at)} ·{' '}
+              {k.last_used_at ? `last used ${formatDateTimeShort(k.last_used_at)}` : 'never used'}
+            </span>
+          </span>
+          <span className="row-actions">
+            <button className="danger" onClick={() => revoke(k)}>Revoke</button>
+          </span>
+        </div>
+      ))}
+      {created && <NewKeyModal created={created} onClose={() => setCreated(null)} />}
+    </div>
+  );
+}
+
 export default function AdminSettings({ currentUser, onSelfChanged }) {
   const [tab, setTab] = useState('tags');
 
@@ -299,10 +435,12 @@ export default function AdminSettings({ currentUser, onSelfChanged }) {
         <button className={tab === 'tags' ? 'active' : 'secondary'} onClick={() => setTab('tags')}>Tags</button>
         <button className={tab === 'invites' ? 'active' : 'secondary'} onClick={() => setTab('invites')}>Invites</button>
         <button className={tab === 'users' ? 'active' : 'secondary'} onClick={() => setTab('users')}>Team</button>
+        <button className={tab === 'api' ? 'active' : 'secondary'} onClick={() => setTab('api')}>API keys</button>
       </div>
       {tab === 'tags' && <TagManager />}
       {tab === 'invites' && <InviteManager />}
       {tab === 'users' && <UserRoster currentUser={currentUser} onSelfChanged={onSelfChanged} />}
+      {tab === 'api' && <ApiKeyManager />}
     </div>
   );
 }
