@@ -23,7 +23,7 @@ export default function UserGuideModal({ user, onClose }) {
         <ul>
           <li>Sign in with the username and password you chose when you joined.</li>
           <li>Click the QuarterDeckLog logo at any time to return to the view you used last (List or Calendar).</li>
-          <li>The menu button at the top right holds Search, My profile, this User Guide and Log out. Admins also see Activity log, Admin and, when the API is on, API Docs.</li>
+          <li>The menu button at the top right holds My profile, this User Guide and Log out. Admins also see Activity log, Admin and, when the API is on, API Docs.</li>
           <li>Times are shown in your local time. Each entry shows who wrote it and the date and time it was written.</li>
           <li>After you sign in, a note at the top lists the entries other people added since you last signed in, with a link to each day. Close it when you are done.</li>
         </ul>
@@ -39,8 +39,8 @@ export default function UserGuideModal({ user, onClose }) {
           <li><strong>Rollup:</strong> click Rollup at the top of the page to see every entry in a date range. It shows 20 entries per page; change that with the Per page drop-down. Print / PDF (choose Save as PDF in the print window; up to 1,000 entries, so pick a shorter range for more) and Export CSV (any size) cover the whole range, not just the page you see.</li>
           <li>On a phone, choose a date from the drop-down instead of the list.</li>
           <li>Entries on a day run newest first, with the oldest at the bottom.</li>
-          <li><strong>Search:</strong> open the menu and choose Search, then type words from an entry or a tag. Only entries with every word are listed. Click a result to open that day.</li>
-          <li><strong>Filter by tag or person:</strong> Rollup and Search have tag buttons and a person drop-down. An entry stays if it has any of the tags you pick. Print / PDF and Export CSV use the same filters.</li>
+          <li><strong>Search:</strong> click Search at the top of the page, type words from an entry or a tag, and press Enter. Every word must match, from the start of a word, so disk finds diskspace. Put "quotes" around words that must appear together, and a minus in front of a word (-backup) to leave it out. Matched words are highlighted. Results are paged like the Rollup (the newest 5,000 at most), and Print / PDF and Export CSV cover all of them. The address in your browser remembers the search, so Back and a copied link return to the same results.</li>
+          <li><strong>Filters:</strong> Rollup and Search share a Filters box: dates (with Year and Q1 to Q4), tags, person, and on Search the sort order. An entry stays if it has any of the tags you pick. Print / PDF and Export CSV use the same filters. Clear filters starts over. On a phone, tap Show to open the filters.</li>
           <li><strong>Pinned:</strong> entries the team has pinned appear in a Pinned section at the top of the day, List and Calendar pages. Click the pin icon on an entry to pin or unpin it. Up to 5 can be pinned at once.</li>
           <li><strong>Edited and late:</strong> an entry that was changed after it was written shows when it was edited. A "Late entry" label marks an entry written on a later day than the day it belongs to.</li>
           <li><strong>Copy:</strong> the copy icon on an entry copies it as plain text, with who wrote it, when, and its tags, ready to paste into a message.</li>

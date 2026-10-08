@@ -4,6 +4,7 @@ const VIEWS = [
   { key: 'list', to: '/list', label: 'List' },
   { key: 'calendar', to: '/calendar', label: 'Calendar' },
   { key: 'rollup', to: '/rollup', label: 'Rollup' },
+  { key: 'search', to: '/search', label: 'Search' },
 ];
 
 export default function ViewToggle({ current }) {

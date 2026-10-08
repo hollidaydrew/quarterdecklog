@@ -1,22 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import DateRangePicker from '../components/DateRangePicker.jsx';
-import EntryCard from '../components/EntryCard.jsx';
 import QuickRanges from '../components/QuickRanges.jsx';
 import ViewToggle from '../components/ViewToggle.jsx';
-import TagChip from '../components/TagChip.jsx';
+import ResultsList from '../components/ResultsList.jsx';
+import { FilterPanel, FilterRow, PersonSelect, TagPicker } from '../components/ResultsFilters.jsx';
 import { downloadRollupCsv } from '../lib/rollupCsv.js';
 import { PRINT_LIMIT, printRollup } from '../lib/rollupPrint.js';
-import { formatUs, weekdayName, todayStr } from '../lib/dates.js';
+import { formatUs, todayStr } from '../lib/dates.js';
 
 // Every entry in a date range, newest day first, ready to print to PDF (the
 // browser's print dialog) or export to CSV. The screen shows one page at a
-// time; Print and Export CSV cover the whole range. Print builds a plain page
-// in a hidden frame (see lib/rollupPrint.js) and stops at PRINT_LIMIT entries. Read only: edit
-// entries from the List or Calendar.
-const PAGE_SIZES = [10, 20, 50, 100, 250, 500, 1000, 5000];
-const DEFAULT_PAGE_SIZE = 20;
-
+// time; Print and Export CSV cover the whole range and the filters in use.
+// Print builds a plain page in a hidden frame (see lib/rollupPrint.js) and
+// stops at PRINT_LIMIT entries. Read only: edit entries from the List or
+// Calendar. The filters and the results layout are shared with Search.
 export default function RollupPage() {
   const today = todayStr();
   const [range, setRange] = useState(null); // null = start of this year through today
@@ -24,8 +22,6 @@ export default function RollupPage() {
   const to = range ? range.to : today;
   const [data, setData] = useState(null); // { entries, truncated }
   const [error, setError] = useState('');
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [page, setPage] = useState(1);
   const [allTags, setAllTags] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [tagIds, setTagIds] = useState([]); // an entry with ANY of these stays, like the day view
@@ -36,16 +32,7 @@ export default function RollupPage() {
     api.get('/api/entries/authors').then(setAuthors).catch(() => {});
   }, []);
 
-  const toggleTag = (id) => setTagIds((ids) => (ids.includes(id) ? ids.filter((t) => t !== id) : [...ids, id]));
-  const filtered = tagIds.length > 0 || authorId !== '';
-  const filterText = [
-    tagIds.length ? `Tag: ${allTags.filter((t) => tagIds.includes(t.id)).map((t) => t.name).join(', ')}` : '',
-    authorId !== '' ? `Person: ${(authors.find((a) => String(a.id) === authorId) || {}).name || ''}` : '',
-  ].filter(Boolean).join(' / ');
   const tagKey = tagIds.join(',');
-
-  useEffect(() => setPage(1), [from, to, pageSize, tagKey, authorId]);
-
   useEffect(() => {
     let cancelled = false;
     setData(null);
@@ -59,98 +46,74 @@ export default function RollupPage() {
     };
   }, [from, to, tagKey, authorId]);
 
-  const count = data ? data.entries.length : 0;
-  const pages = Math.max(1, Math.ceil(count / pageSize));
-  const current = Math.min(page, pages);
-  const shown = useMemo(() => {
-    if (!data) return [];
-    return data.entries.slice((current - 1) * pageSize, current * pageSize);
-  }, [data, current, pageSize]);
+  const toggleTag = (id) => setTagIds((ids) => (ids.includes(id) ? ids.filter((t) => t !== id) : [...ids, id]));
+  const clearFilters = () => {
+    setRange(null);
+    setTagIds([]);
+    setAuthorId('');
+  };
 
-  // Group the (already sorted) shown entries by day.
-  const days = [];
-  for (const entry of shown) {
-    const last = days[days.length - 1];
-    if (last && last.date === entry.entry_date) last.entries.push(entry);
-    else days.push({ date: entry.entry_date, entries: [entry] });
-  }
-  const ready = !!data;
-  const first = (current - 1) * pageSize + 1;
-  const lastShown = Math.min(count, current * pageSize);
+  const tagsText = tagIds.length ? `Tag: ${allTags.filter((t) => tagIds.includes(t.id)).map((t) => t.name).join(', ')}` : '';
+  const personText = authorId !== '' ? `Person: ${(authors.find((a) => String(a.id) === authorId) || {}).name || ''}` : '';
+  const filterText = [tagsText, personText].filter(Boolean).join(' / ');
+  const filtered = filterText !== '';
+  const activeCount = (range ? 1 : 0) + (tagIds.length ? 1 : 0) + (authorId !== '' ? 1 : 0);
 
-  const pager = (
-    <div className="rollup-pager no-print">
-      <label>
-        Per page
-        <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
-          {PAGE_SIZES.map((n) => <option key={n} value={n}>{n === 5000 ? '5,000 (max)' : n}</option>)}
-        </select>
-      </label>
-      <span className="muted">{first}-{lastShown} of {count}</span>
-      <button type="button" className="secondary" disabled={current <= 1} onClick={() => setPage(current - 1)}>Previous</button>
-      <span className="muted">Page {current} of {pages}</span>
-      <button type="button" className="secondary" disabled={current >= pages} onClick={() => setPage(current + 1)}>Next</button>
-    </div>
+  const entries = data ? data.entries : [];
+  const count = entries.length;
+
+  const actions = (
+    <>
+      <button type="button" className="secondary" disabled={!count || count > PRINT_LIMIT} onClick={() => printRollup(entries, from, to, filterText)}>Print / PDF</button>
+      <button type="button" className="secondary" disabled={!count} onClick={() => downloadRollupCsv(entries, from, to, filtered)}>Export CSV</button>
+    </>
   );
+  const notice = count > PRINT_LIMIT ? (
+    <p className="muted results-note no-print">
+      Print / PDF handles up to {PRINT_LIMIT.toLocaleString('en-US')} entries. Pick a shorter range to print, or use Export CSV for all {count.toLocaleString('en-US')}.
+    </p>
+  ) : null;
 
   return (
-    <div className="rollup-page">
+    <div className="results-page rollup-page">
       <div className="page-toolbar no-print">
         <ViewToggle current="rollup" />
       </div>
-      <div className="rollup-controls no-print">
-        <div className="rollup-range">
-          <DateRangePicker value={range} defaultLabel={`All dates in ${today.slice(0, 4)}`} onChange={setRange} />
-          <QuickRanges value={range} onChange={setRange} />
-        </div>
-        <div className="rollup-actions">
-          <button type="button" className="secondary" disabled={!count || count > PRINT_LIMIT} onClick={() => printRollup(data.entries, from, to, filterText)}>Print / PDF</button>
-          <button type="button" className="secondary" disabled={!count} onClick={() => downloadRollupCsv(data.entries, from, to, filtered)}>Export CSV</button>
-        </div>
+
+      <div className="no-print">
+        <FilterPanel activeCount={activeCount} onClear={clearFilters}>
+          <FilterRow label="Dates">
+            <div className="filter-dates">
+              <DateRangePicker value={range} defaultLabel={`All dates in ${today.slice(0, 4)}`} onChange={setRange} />
+              <QuickRanges value={range} onChange={setRange} />
+            </div>
+          </FilterRow>
+          <FilterRow label="Tags">
+            <TagPicker tags={allTags} selected={tagIds} onToggle={toggleTag} />
+          </FilterRow>
+          {authors.length > 1 && (
+            <FilterRow label="Person">
+              <PersonSelect authors={authors} value={authorId} onChange={setAuthorId} />
+            </FilterRow>
+          )}
+        </FilterPanel>
       </div>
 
-      {(allTags.length > 0 || authors.length > 1) && (
-        <div className="filter-bar no-print">
-          {allTags.map((tag) => (
-            <TagChip key={tag.id} tag={tag} outline active={tagIds.includes(tag.id)} onClick={() => toggleTag(tag.id)} />
-          ))}
-          {authors.length > 1 && (
-            <select value={authorId} onChange={(e) => setAuthorId(e.target.value)} aria-label="Person">
-              <option value="">Everyone</option>
-              {authors.map((a) => (
-                <option key={a.id} value={a.id}>{a.name}{a.deleted ? ' (deleted user)' : ''}</option>
-              ))}
-            </select>
-          )}
-          {filtered && (
-            <button type="button" className="secondary" style={{ padding: '4px 10px' }} onClick={() => { setTagIds([]); setAuthorId(''); }}>Clear filters</button>
-          )}
-        </div>
-      )}
-      <h1 className="rollup-title">Rollup: {formatUs(from)} to {formatUs(to)}</h1>
       {error && <p className="error-text" role="alert">{error}</p>}
-      {!ready && !error && <p className="muted">Loading…</p>}
-      {filtered && <p className="muted rollup-count">Filtered: {filterText}</p>}
-      {ready && count === 0 && <p className="muted">{filtered ? 'No entries match these filters in this range.' : 'No entries in this range.'}</p>}
-      {ready && count > 0 && (
-        <p className="muted rollup-count">
-          {count} {count === 1 ? 'entry' : 'entries'} on {days.length} {days.length === 1 ? 'day' : 'days'}
-          {data.truncated ? '. Showing the newest ones only; pick a shorter range to see the rest.' : ''}
-        </p>
+      {!data && !error && <p className="muted">Loading…</p>}
+      {data && (
+        <ResultsList
+          eyebrow="Rollup"
+          title={`${formatUs(from)} to ${formatUs(to)}`}
+          summary={filterText}
+          actions={actions}
+          notice={notice}
+          entries={entries}
+          truncated={data.truncated}
+          resetKey={`${from}|${to}|${tagKey}|${authorId}`}
+          emptyText={filtered ? 'No entries match these filters in this range.' : 'No entries in this range.'}
+        />
       )}
-      {ready && count > PRINT_LIMIT && (
-        <p className="muted no-print">Print / PDF handles up to {PRINT_LIMIT.toLocaleString()} entries. Pick a shorter range to print, or use Export CSV for all {count.toLocaleString()}.</p>
-      )}
-      {ready && count > 0 && pager}
-      {days.map((day) => (
-        <section key={day.date} className="rollup-day">
-          <h2>{formatUs(day.date)} {weekdayName(day.date)}</h2>
-          {day.entries.map((entry) => (
-            <EntryCard key={entry.id} entry={entry} canEdit={false} />
-          ))}
-        </section>
-      ))}
-      {ready && count > 0 && pager}
     </div>
   );
 }

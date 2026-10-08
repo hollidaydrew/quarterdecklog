@@ -550,18 +550,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .list-none { padding: 16px; margin: 0; font-size: 14px; }
 
 /* ---- Rollup ---- */
-.rollup-controls { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; margin-bottom: 8px; }
-.rollup-range { width: 340px; max-width: 100%; }
-.rollup-actions { display: flex; gap: 8px; }
-.rollup-title { font-size: 20px; margin: 12px 0 4px; }
-.rollup-count { margin: 0 0 12px; font-size: 14px; }
-.rollup-pager { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 8px 0 12px; font-size: 14px; }
-.rollup-pager label { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
-.rollup-pager select { width: auto; }
-.rollup-pager button { padding: 4px 12px; }
-.rollup-day h2 { font-size: 15px; margin: 18px 0 8px; color: var(--color-text-muted); }
-.rollup-day .entry-card { break-inside: avoid; }
-
 /* Ctrl+P on the page prints just the entries shown; Print / PDF prints the whole range. */
 @media print {
   .topbar, .app-footer, .no-print { display: none !important; }
@@ -777,14 +765,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   .credits-list li { grid-template-columns: 1fr; }
 }
 
-.search-form { display: flex; gap: 8px; margin: 8px 0 12px; }
-.search-form input { flex: 1; min-width: 0; }
-.search-results { list-style: none; margin: 0; padding: 0; }
-.search-results li { border-top: 1px solid var(--color-border); }
-.search-result { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 10px 4px; text-align: left; background: none; border: none; color: inherit; font: inherit; cursor: pointer; border-radius: 0; }
-.search-result:hover, .search-result:focus-visible { background: var(--color-primary-tint); }
-.search-result-head { display: flex; flex-wrap: wrap; gap: 4px 12px; }
-.search-snippet { overflow-wrap: anywhere; }
+
 
 /* v0.10.0: entry card icons, late label, pinned notes, since-last-sign-in banner */
 .entry-actions { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
@@ -812,8 +793,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .since-banner .since-days { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 14px; }
 .notice-banner { margin: 0 0 16px; padding: 12px 14px; border: 1px solid #f3c58a; border-radius: 10px; background: #fff1dc; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .notice-banner p { margin: 0; }
-.filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 6px 0 10px; }
-.filter-bar select { width: auto; }
 .since-banner, .pinned-notes { flex-shrink: 0; }
 .pinned-notes { max-height: 40vh; overflow-y: auto; }
 .pinned-note.card { padding: 10px 14px; }
@@ -829,3 +808,125 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .recovery-codes { list-style: none; margin: 0; padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-bg); }
 .recovery-codes code { font-size: 15px; letter-spacing: 1px; }
 .danger-zone { border: 1px solid #e0a0a0; border-radius: 10px; padding: 14px; background: #fff7f7; }
+
+/* ======================================================================
+   Rollup + Search: one family. A boxed Filters panel, then results laid out
+   like a page from the log (a double-ruled header, days ruled off with their
+   entry counts). Figures use tabular monospace, like a typed log.
+   ====================================================================== */
+:root {
+  --font-figure: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}
+.results-page { display: flex; flex-direction: column; gap: 14px; }
+.results-page .page-toolbar { margin-bottom: 0; }
+
+/* -- Filters panel -- */
+.filter-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 16px 4px;
+}
+.filter-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 30px; }
+.filter-head h2 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-text-faint); }
+.filter-on { color: var(--color-primary-dark); letter-spacing: 0.06em; }
+.filter-head-actions { display: flex; align-items: center; gap: 8px; }
+.filter-clear, .filter-toggle { padding: 3px 12px; font-size: 13px; }
+.filter-toggle { display: none; }
+.filter-row {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 6px 14px;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border);
+}
+.filter-head + .filter-body .filter-row:first-child { margin-top: 6px; }
+.filter-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 24px; border-top: 1px solid var(--color-border); }
+.filter-pair .filter-row { border-top: none; }
+.filter-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-faint); }
+.filter-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.filter-field select { width: auto; max-width: 100%; }
+.filter-dates { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
+.filter-dates .dp-trigger-row { min-width: 250px; }
+.filter-dates .quick-ranges { margin-top: 0; gap: 6px; }
+.filter-dates .quick-ranges button { flex: 0 0 auto; min-width: 46px; padding: 6px 10px; }
+
+/* -- Search box -- */
+.search-bar { display: flex; gap: 10px; align-items: stretch; }
+.search-field { position: relative; flex: 1; min-width: 0; }
+.search-field input {
+  width: 100%;
+  font-size: 18px;
+  padding: 13px 16px 13px 46px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--color-text-faint); pointer-events: none; }
+.search-bar button { padding: 0 24px; font-size: 16px; border-radius: 12px; }
+.search-hint { margin: -6px 2px 0; font-size: 13px; color: var(--color-text-muted); }
+.search-hint code { font-family: var(--font-figure); font-size: 12px; padding: 1px 5px; border-radius: 4px; background: var(--color-primary-tint); }
+.search-start { margin: 8px 2px; max-width: 60ch; line-height: 1.5; }
+
+/* -- Results header: the signature. A double rule, like the head of a log page. -- */
+.results-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 4px double var(--color-primary);
+}
+.results-id { min-width: 0; flex: 1 1 320px; }
+.results-eyebrow { margin: 0 0 2px; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-primary-dark); }
+.results-title { margin: 0; font-family: var(--font-figure); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.results-meta { margin: 6px 0 0; font-size: 14px; color: var(--color-text-muted); }
+.results-meta .figure { font-family: var(--font-figure); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--color-text); }
+.results-note { margin: 6px 0 0; }
+.results-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.results-empty { margin: 12px 2px; }
+
+/* -- Pager: one slim line -- */
+.pager { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 10px 0 0; font-size: 13px; color: var(--color-text-muted); }
+.pager label { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
+.pager select { width: auto; padding: 3px 8px; font-size: 13px; }
+.pager button { padding: 3px 12px; font-size: 13px; }
+.pager-range { font-family: var(--font-figure); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+/* -- Days, ruled off with their entry counts -- */
+.day-group .entry-card { margin-bottom: 10px; break-inside: avoid; }
+.day-head { display: flex; align-items: baseline; gap: 10px; margin: 22px 0 10px; font-size: 13px; font-weight: 400; }
+.day-date { font-family: var(--font-figure); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-text); }
+.day-name { color: var(--color-text-muted); }
+.day-rule { flex: 1; align-self: center; border-bottom: 1px solid var(--color-border); }
+.day-count { font-family: var(--font-figure); font-size: 12px; color: var(--color-text-faint); font-variant-numeric: tabular-nums; }
+
+/* Matched words in a search result: the soft orange the app already uses for incidents. */
+.entry-body mark { background: #fff1dc; color: inherit; border-radius: 3px; padding: 0 1px; box-shadow: 0 0 0 1px #f3c58a; }
+
+/* -- Phones: the filters fold away behind a button that says how many are on. -- */
+@media (max-width: 700px) {
+  .filter-toggle { display: inline-block; }
+  .filter-body { display: none; }
+  .filter-panel.is-open .filter-body { display: block; }
+  .filter-row { grid-template-columns: 1fr; padding: 10px 0; }
+  .filter-dates .dp-trigger-row { min-width: 0; width: 100%; }
+  .filter-dates .dp, .filter-dates .dp-trigger { width: 100%; }
+  .filter-pair { display: block; border-top: none; }
+  .filter-pair .filter-row { border-top: 1px solid var(--color-border); }
+  .filter-dates { width: 100%; }
+  .filter-dates .quick-ranges { width: 100%; }
+  .filter-dates .quick-ranges button { flex: 1; }
+  .search-bar button { padding: 0 16px; }
+  .search-field input { font-size: 16px; }
+  .results-actions { width: 100%; }
+  .results-actions button { flex: 1; }
+  .results-title { font-size: 19px; }
+  .day-head { flex-wrap: wrap; }
+}
+@media print {
+  .filter-panel, .search-bar, .search-hint, .pager { display: none !important; }
+}

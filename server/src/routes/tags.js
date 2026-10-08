@@ -1,6 +1,7 @@
 import { db } from '../db.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import { logActivity } from '../activity.js';
+import { entryIdsWithTag, reindexEntries } from '../searchIndex.js';
 
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
@@ -49,6 +50,8 @@ export default async function tagRoutes(fastify) {
       tag.id
     );
     const updated = db.prepare('SELECT * FROM tags WHERE id = ?').get(tag.id);
+    // Search matches tag names, so entries with this tag are re-indexed under the new name.
+    if (updated.name !== tag.name) reindexEntries(entryIdsWithTag(tag.id));
     if (updated.name !== tag.name || updated.color !== tag.color) {
       logActivity(request.user, 'tag_updated', `${request.user.display_name} edited the tag "${tag.name}"`, {
         changes: [
@@ -64,7 +67,9 @@ export default async function tagRoutes(fastify) {
     const tag = db.prepare('SELECT * FROM tags WHERE id = ?').get(request.params.id);
     if (!tag) return reply.code(404).send({ error: 'Tag not found' });
     const uses = db.prepare('SELECT COUNT(*) AS n FROM entry_tags WHERE tag_id = ?').get(tag.id).n;
+    const affected = entryIdsWithTag(tag.id);
     db.prepare('DELETE FROM tags WHERE id = ?').run(tag.id);
+    reindexEntries(affected);
     logActivity(request.user, 'tag_deleted', `${request.user.display_name} deleted the tag "${tag.name}"`, {
       name: tag.name,
       entries_that_used_it: uses,
