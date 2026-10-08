@@ -5,6 +5,8 @@ import ViewToggle from '../components/ViewToggle.jsx';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const monthIndex = (y, m) => y * 12 + (m - 1);
+
 function pad(n) { return String(n).padStart(2, '0'); }
 function toDateStr(y, m, d) { return `${y}-${pad(m)}-${pad(d)}`; }
 
@@ -42,6 +44,10 @@ export default function CalendarPage({ user, onViewUsed }) {
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   const todayStr = toDateStr(today.getFullYear(), today.getMonth() + 1, today.getDate());
+  // Future days can't be logged, so they are greyed out, and Next stops at the
+  // current month. A future day that already holds entries stays clickable so
+  // they can still be read and edited.
+  const atCurrentMonth = monthIndex(year, month) >= monthIndex(today.getFullYear(), today.getMonth() + 1);
   const monthLabel = firstOfMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 
   return (
@@ -53,7 +59,7 @@ export default function CalendarPage({ user, onViewUsed }) {
         <div className="calendar-header">
           <button className="secondary" onClick={() => changeMonth(-1)}>&larr; Prev</button>
           <h2 style={{ margin: 0 }}>{monthLabel}</h2>
-          <button className="secondary" onClick={() => changeMonth(1)}>Next &rarr;</button>
+          <button className="secondary" disabled={atCurrentMonth} onClick={() => changeMonth(1)}>Next &rarr;</button>
         </div>
         <div className="calendar-grid">
           {WEEKDAYS.map((w) => <div key={w} className="calendar-weekday">{w}</div>)}
@@ -61,10 +67,13 @@ export default function CalendarPage({ user, onViewUsed }) {
             if (d === null) return <div key={`b${i}`} className="calendar-day empty" />;
             const dateStr = toDateStr(year, month, d);
             const count = counts[dateStr] || 0;
+            const blocked = dateStr > todayStr && count === 0;
             return (
               <button
                 key={dateStr}
                 type="button"
+                disabled={blocked}
+                title={blocked ? "Future days can't be logged" : undefined}
                 className={`calendar-day${dateStr === todayStr ? ' today' : ''}`}
                 onClick={() => navigate(`/day/${dateStr}`)}
               >

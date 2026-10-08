@@ -3,6 +3,20 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.9.0] - 2026-10-08
+
+### Changed
+- Entries can no longer be dated in the future. On the Calendar, days after today are greyed out and Next stops at the current month. The date button on the List and Rollup greys out days after today and stops at this year. A future day that already has entries can still be opened, read, edited and deleted, but it has no New entry button. Opening a future day by its web address shows a note instead.
+- The server (and the API) now refuse an entry dated after tomorrow's UTC date. Tomorrow itself is allowed on purpose, because someone ahead of UTC may already be on that day; the web app enforces the exact local date.
+
+### Security
+- Updated three supporting packages: sanitize-html 2.18.0 (cleans entry text), @fastify/static 10.1.5 (serves the app) and Vite 8.3.2 (build tool).
+
+### Upgrading from 0.8.0
+- Your data is kept. No database changes, and nothing is deleted or hidden, including any entries that already have a future date.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.8.0] - 2026-10-08
 
 ### Added

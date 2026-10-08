@@ -5,7 +5,7 @@ import EntryCard from './EntryCard.jsx';
 import EntryEditor from './EntryEditor.jsx';
 import TagChip from './TagChip.jsx';
 import Modal from './Modal.jsx';
-import { parseDateStr } from '../lib/dates.js';
+import { parseDateStr, isFutureDate } from '../lib/dates.js';
 import { activeEasterEggs } from '../lib/easterEggTags.js';
 
 // One day's entries with tag filter and create/edit/delete. Used by the
@@ -96,9 +96,17 @@ export default function DayEntries({ date, user, backLink, onChanged }) {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
+  // The log records the past: a day after today can be read (in case entries
+  // already exist) but nothing new can be added to it.
+  const isFuture = isFutureDate(date);
+
   let emptyText = null;
   if (loaded && visibleEntries.length === 0) {
-    if (entries.length === 0) emptyText = 'No entries for this day yet.';
+    if (entries.length === 0) {
+      emptyText = isFuture
+        ? "This day hasn't happened yet. Entries can only be added for today and earlier days."
+        : 'No entries for this day yet.';
+    }
     else if (activeFilterIds.size === 1) emptyText = 'No entries for that tag, on this day.';
     else emptyText = 'No entries for that tag combination, on this day.';
   }
@@ -111,7 +119,7 @@ export default function DayEntries({ date, user, backLink, onChanged }) {
           <h2 style={{ margin: backLink ? '4px 0 0' : 0 }}>{niceDate}</h2>
         </div>
         <div className="day-actions">
-          <button onClick={() => setModalMode('new')}>+ New entry</button>
+          {!isFuture && <button onClick={() => setModalMode('new')}>+ New entry</button>}
           {activeEasterEggs(allTags).map((egg) => (
             <Link key={egg.slug} to={`/tag/${egg.slug}`} className="egg-link">{egg.label}</Link>
           ))}

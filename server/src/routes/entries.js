@@ -1,7 +1,7 @@
 import { db } from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sanitizeEntryBody } from '../utils/sanitize.js';
-import { isValidDateString, isValidYearMonth } from '../utils/date.js';
+import { isValidDateString, isValidYearMonth, isFutureEntryDate } from '../utils/date.js';
 import { htmlToText, logActivity, usDate } from '../activity.js';
 
 // Most entries the by-tag page returns; keep in step with LIMIT in web/src/pages/TagPage.jsx.
@@ -198,6 +198,9 @@ export default async function entryRoutes(fastify) {
     const { body, entry_date, tag_ids } = request.body || {};
     if (!isValidDateString(entry_date)) {
       return reply.code(400).send({ error: 'entry_date must be a valid YYYY-MM-DD string' });
+    }
+    if (isFutureEntryDate(entry_date)) {
+      return reply.code(400).send({ error: "Entries can't be dated in the future" });
     }
     const clean = sanitizeEntryBody(body);
     if (!clean) {

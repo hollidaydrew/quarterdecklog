@@ -10,6 +10,11 @@ function shiftMonth(year, month, delta) {
   return { year: Math.floor(idx / 12), month: (idx % 12) + 1 };
 }
 
+// The log records the past, so the picker stops at today: later days are
+// greyed out, and the left-hand month never goes past last month (so the
+// right-hand month is at most the current one).
+const monthIdx = (y, m) => y * 12 + (m - 1);
+
 function MonthGrid({ year, month, today, lo, hi, onPick, onHover, className = '' }) {
   const lead = new Date(year, month - 1, 1).getDay();
   const days = new Date(year, month, 0).getDate();
@@ -24,11 +29,13 @@ function MonthGrid({ year, month, today, lo, hi, onPick, onHover, className = ''
         {DOW.map((w) => <div key={w} className="dp-dow">{w}</div>)}
         {cells.map((d, i) => {
           if (!d) return <div key={`b${i}`} />;
+          const future = d > today;
           const isLo = d === lo;
           const isHi = d === hi;
           const inBand = lo && hi && d > lo && d < hi;
           const cls = [
             'dp-day',
+            future ? 'is-future' : '',
             d === today ? 'is-today' : '',
             isLo || isHi ? 'is-edge' : '',
             inBand ? 'in-band' : '',
@@ -42,6 +49,7 @@ function MonthGrid({ year, month, today, lo, hi, onPick, onHover, className = ''
               className={cls}
               aria-label={`${formatUs(d)} ${weekdayName(d)}`}
               aria-pressed={isLo || isHi}
+              disabled={future}
               onClick={() => onPick(d)}
               onMouseEnter={() => onHover(d)}
               onFocus={() => onHover(d)}
@@ -69,13 +77,21 @@ export default function DateRangePicker({ value, defaultLabel, onChange }) {
   const [hover, setHover] = useState(null);
   const [view, setView] = useState(() => {
     const { y, m } = parseDateStr(today);
-    return { year: y, month: m };
+    const idx = monthIdx(y, m) - 1;
+    return { year: Math.floor(idx / 12), month: (idx % 12) + 1 };
   });
+
+  const { y: todayY, m: todayM } = parseDateStr(today);
+  const maxIdx = monthIdx(todayY, todayM) - 1;
+  const clampView = (year, month) => {
+    const idx = Math.min(monthIdx(year, month), maxIdx);
+    return { year: Math.floor(idx / 12), month: (idx % 12) + 1 };
+  };
 
   const openPicker = () => {
     const anchor = value ? value.from : today;
     const { y, m } = parseDateStr(anchor);
-    setView({ year: y, month: m });
+    setView(clampView(y, m));
     setMode(value && value.from === value.to ? 'single' : 'range');
     setDraft(value ? { start: value.from, end: value.to } : { start: null, end: null });
     setHover(null);
@@ -137,7 +153,7 @@ export default function DateRangePicker({ value, defaultLabel, onChange }) {
   const thisYear = parseDateStr(today).y;
   const years = useMemo(() => {
     const out = [];
-    const max = Math.max(thisYear + 5, view.year);
+    const max = Math.max(thisYear, view.year);
     for (let y = Math.min(MIN_YEAR, view.year); y <= max; y++) out.push(y);
     return out;
   }, [thisYear, view.year]);
@@ -192,13 +208,13 @@ export default function DateRangePicker({ value, defaultLabel, onChange }) {
 
           <div className="dp-nav">
             <button type="button" className="secondary" aria-label="Previous month" onClick={() => setView((v) => shiftMonth(v.year, v.month, -1))}>&lsaquo;</button>
-            <select aria-label="Month" value={view.month} onChange={(e) => setView((v) => ({ ...v, month: Number(e.target.value) }))}>
+            <select aria-label="Month" value={view.month} onChange={(e) => setView((v) => clampView(v.year, Number(e.target.value)))}>
               {MONTHS.map((name, i) => <option key={name} value={i + 1}>{name}</option>)}
             </select>
-            <select aria-label="Year" value={view.year} onChange={(e) => setView((v) => ({ ...v, year: Number(e.target.value) }))}>
+            <select aria-label="Year" value={view.year} onChange={(e) => setView((v) => clampView(Number(e.target.value), v.month))}>
               {years.map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
-            <button type="button" className="secondary" aria-label="Next month" onClick={() => setView((v) => shiftMonth(v.year, v.month, 1))}>&rsaquo;</button>
+            <button type="button" className="secondary" aria-label="Next month" disabled={monthIdx(view.year, view.month) >= maxIdx} onClick={() => setView((v) => { const n = shiftMonth(v.year, v.month, 1); return clampView(n.year, n.month); })}>&rsaquo;</button>
           </div>
 
           <div className="dp-months">

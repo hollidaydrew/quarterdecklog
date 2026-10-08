@@ -205,6 +205,8 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .calendar-day:hover { border-color: var(--color-primary); }
+.calendar-day:disabled { opacity: 0.4; cursor: not-allowed; }
+.calendar-day:disabled:hover { border-color: var(--color-border); }
 .calendar-day.empty { visibility: hidden; }
 .calendar-day.today { border-color: var(--color-primary); font-weight: 700; }
 
@@ -638,6 +640,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   font-variant-numeric: tabular-nums;
 }
 .dp-day:hover { background: var(--color-border); }
+.dp-day.is-future, .dp-day.is-future:hover { background: transparent; color: var(--color-text-muted); opacity: 0.4; cursor: not-allowed; }
 .dp-day.in-band { background: var(--color-primary-band); }
 .dp-day.in-band:hover { background: rgba(100, 117, 129, 0.28); }
 .dp-day.is-edge { background: var(--color-primary); color: white; font-weight: 700; border-radius: 8px; }

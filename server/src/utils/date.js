@@ -14,6 +14,20 @@ export function isValidDateString(value) {
   return d >= 1 && d <= daysInMonth;
 }
 
+// The log records the past, so an entry can't be dated after today. The server
+// can't know each person's local date (see the note at the top), and the
+// furthest-ahead place on Earth is UTC+14, so anything up to tomorrow's UTC
+// date is allowed. The browser enforces the exact local date; this stops
+// requests that are clearly in the future, including from the API.
+export function latestAllowedEntryDate(now = new Date()) {
+  const limit = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+  return limit.toISOString().slice(0, 10);
+}
+
+export function isFutureEntryDate(value, now = new Date()) {
+  return value > latestAllowedEntryDate(now);
+}
+
 export function isValidYearMonth(year, month) {
   const y = Number(year);
   const m = Number(month);

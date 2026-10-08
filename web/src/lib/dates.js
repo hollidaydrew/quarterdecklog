@@ -25,6 +25,11 @@ export function todayStr() {
   return toDateStr(t.getFullYear(), t.getMonth() + 1, t.getDate());
 }
 
+// True for any day after today (the log records the past, not the future).
+export function isFutureDate(s) {
+  return s > todayStr();
+}
+
 export function addDays(s, n) {
   const { y, m, d } = parseDateStr(s);
   const dt = new Date(y, m - 1, d + n, 12);
