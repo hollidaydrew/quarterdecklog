@@ -8,6 +8,45 @@ import { htmlToText, logActivity, usDate } from '../activity.js';
 const BY_TAG_LIMIT = 1000;
 // Most entries the Rollup page returns for one date range.
 const ROLLUP_LIMIT = 5000;
+// Rollup and Search can be narrowed to some tags (an entry with ANY of them
+// stays, like the day view) and to one author. The ids are checked as plain
+// numbers and every value reaches SQL as a bound parameter.
+const MAX_FILTER_TAGS = 20;
+const ID_RE = /^\d{1,9}$/;
+const MAX_PINNED = 5;
+
+function parseEntryFilters(query) {
+  let tagIds = [];
+  if (query.tag_ids !== undefined && query.tag_ids !== '') {
+    const parts = typeof query.tag_ids === 'string' ? query.tag_ids.split(',') : [];
+    if (!parts.length || parts.length > MAX_FILTER_TAGS || !parts.every((p) => ID_RE.test(p))) {
+      return { error: `tag_ids must be up to ${MAX_FILTER_TAGS} comma-separated tag numbers` };
+    }
+    tagIds = [...new Set(parts.map(Number))];
+  }
+  let authorId = null;
+  if (query.author_id !== undefined && query.author_id !== '') {
+    if (!ID_RE.test(String(query.author_id))) return { error: 'author_id must be a number' };
+    authorId = Number(query.author_id);
+  }
+  return { tagIds, authorId };
+}
+
+// The extra WHERE conditions (each starting with AND) and their parameters.
+function filterClause({ tagIds, authorId }) {
+  let sql = '';
+  const params = [];
+  if (authorId !== null) {
+    sql += ' AND entries.author_id = ?';
+    params.push(authorId);
+  }
+  if (tagIds.length) {
+    sql += ` AND entries.id IN (SELECT entry_id FROM entry_tags WHERE tag_id IN (${tagIds.map(() => '?').join(',')}))`;
+    params.push(...tagIds);
+  }
+  return { sql, params };
+}
+
 // Most matches the search returns, and the length of the snippet shown for each.
 const SEARCH_LIMIT = 100;
 const SNIPPET_CHARS = 200;
@@ -95,19 +134,109 @@ export default async function entryRoutes(fastify) {
     if (!isValidDateString(from) || !isValidDateString(to) || from > to) {
       return reply.code(400).send({ error: 'from and to must be valid YYYY-MM-DD dates, with from on or before to' });
     }
+    const filters = parseEntryFilters(request.query);
+    if (filters.error) return reply.code(400).send({ error: filters.error });
+    const extra = filterClause(filters);
     const rows = db
       .prepare(
         `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
                 (users.deleted_at IS NOT NULL) AS author_deleted
          FROM entries
          JOIN users ON users.id = entries.author_id
-         WHERE entries.entry_date >= ? AND entries.entry_date <= ?
+         WHERE entries.entry_date >= ? AND entries.entry_date <= ?${extra.sql}
          ORDER BY entries.entry_date DESC, entries.created_at DESC, entries.id DESC
          LIMIT ?`
       )
-      .all(from, to, ROLLUP_LIMIT + 1);
+      .all(from, to, ...extra.params, ROLLUP_LIMIT + 1);
     const truncated = rows.length > ROLLUP_LIMIT;
     return { entries: rows.slice(0, ROLLUP_LIMIT).map(attachTags), truncated };
+  });
+
+  // "Since you last signed in": entries other people (and the API) added after
+  // this person's PREVIOUS sign-in, grouped by day. The time comes from the
+  // session, not the browser, so it can't be asked for with someone else's.
+  // Entries are counted by when they were written, so a late entry for an old
+  // day still counts as new.
+  fastify.get('/api/entries/since', { preHandler: requireAuth }, async (request) => {
+    const since = request.session.previousLoginAt || null;
+    if (!since) return { since: null, total: 0, days: [] };
+    const total = db
+      .prepare('SELECT COUNT(*) AS n FROM entries WHERE created_at > ? AND author_id != ?')
+      .get(since, request.user.id).n;
+    const days = db
+      .prepare(
+        `SELECT entry_date, COUNT(*) AS count FROM entries
+         WHERE created_at > ? AND author_id != ?
+         GROUP BY entry_date ORDER BY entry_date DESC LIMIT 60`
+      )
+      .all(since, request.user.id);
+    return { since, total, days };
+  });
+
+  // Everyone who has written an entry, for the Rollup and Search author filter.
+  // Deleted people and System are included because their entries still exist.
+  fastify.get('/api/entries/authors', { preHandler: requireAuth }, async () => {
+    return db
+      .prepare(
+        `SELECT id, display_name AS name, (deleted_at IS NOT NULL) AS deleted, is_system AS system
+         FROM users WHERE id IN (SELECT DISTINCT author_id FROM entries)
+         ORDER BY is_system, name COLLATE NOCASE`
+      )
+      .all()
+      .map((u) => ({ id: u.id, name: u.name, deleted: !!u.deleted, system: !!u.system }));
+  });
+
+  // Pinned standing notes: a few entries kept at the top of the log.
+  fastify.get('/api/entries/pinned', { preHandler: requireAuth }, async () => {
+    const rows = db
+      .prepare(
+        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
+                (users.deleted_at IS NOT NULL) AS author_deleted
+         FROM entries
+         JOIN users ON users.id = entries.author_id
+         WHERE entries.pinned_at IS NOT NULL
+         ORDER BY entries.pinned_at DESC, entries.id DESC`
+      )
+      .all();
+    return rows.map(attachTags);
+  });
+
+  // Anyone signed in can pin or unpin: it is a shared team note. Pinning is not
+  // an edit, so it leaves the entry's text, edited marker and times alone. The
+  // limit is checked inside the same transaction as the change, so two people
+  // pinning at once can't go past it.
+  fastify.put('/api/entries/:id/pin', { preHandler: requireAuth }, async (request, reply) => {
+    const { pinned } = request.body || {};
+    if (typeof pinned !== 'boolean') return reply.code(400).send({ error: 'pinned must be true or false' });
+    const outcome = db.transaction(() => {
+      const entry = db.prepare('SELECT * FROM entries WHERE id = ?').get(request.params.id);
+      if (!entry) return { status: 404, error: 'Entry not found' };
+      if (!!entry.pinned_at === pinned) return { entry, changed: false };
+      if (pinned) {
+        const count = db.prepare('SELECT COUNT(*) AS n FROM entries WHERE pinned_at IS NOT NULL').get().n;
+        if (count >= MAX_PINNED) {
+          return { status: 409, error: `Only ${MAX_PINNED} entries can be pinned at once. Unpin one first.` };
+        }
+        db.prepare("UPDATE entries SET pinned_at = datetime('now'), pinned_by_name = ? WHERE id = ?").run(
+          request.user.display_name,
+          entry.id
+        );
+      } else {
+        db.prepare('UPDATE entries SET pinned_at = NULL, pinned_by_name = NULL WHERE id = ?').run(entry.id);
+      }
+      return { entry, changed: true };
+    })();
+    if (outcome.error) return reply.code(outcome.status).send({ error: outcome.error });
+    if (outcome.changed) {
+      const { entry } = outcome;
+      logActivity(
+        request.user,
+        pinned ? 'entry_pinned' : 'entry_unpinned',
+        `${request.user.display_name} ${pinned ? 'pinned' : 'unpinned'} an entry for ${usDate(entry.entry_date)}`,
+        { entry_id: entry.id, entry_date: entry.entry_date }
+      );
+    }
+    return { ok: true, pinned };
   });
 
   fastify.get('/api/entries', { preHandler: requireAuth }, async (request, reply) => {
@@ -162,15 +291,19 @@ export default async function entryRoutes(fastify) {
       return reply.code(400).send({ error: 'Search for 2 to 100 characters' });
     }
     const words = q.split(/\s+/);
+    const filters = parseEntryFilters(request.query);
+    if (filters.error) return reply.code(400).send({ error: filters.error });
+    const extra = filterClause(filters);
     const rows = db
       .prepare(
         `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
                 (users.deleted_at IS NOT NULL) AS author_deleted
          FROM entries
          JOIN users ON users.id = entries.author_id
+         WHERE 1 = 1${extra.sql}
          ORDER BY entries.entry_date DESC, entries.created_at DESC, entries.id DESC`
       )
-      .all();
+      .all(...extra.params);
     const results = [];
     let total = 0;
     for (const row of rows) {
@@ -246,6 +379,7 @@ export default async function entryRoutes(fastify) {
     setEntryTags(entry.id, tag_ids);
     const afterTagIds = db.prepare('SELECT tag_id FROM entry_tags WHERE entry_id = ?').all(entry.id).map((r) => r.tag_id).sort();
     if (clean !== entry.body || beforeTagIds.join() !== afterTagIds.join()) {
+      db.prepare("UPDATE entries SET edited_at = datetime('now') WHERE id = ?").run(entry.id);
       const author = db.prepare('SELECT display_name FROM users WHERE id = ?').get(entry.author_id);
       const whose = entry.author_id === request.user.id ? 'an entry' : `${author.display_name}'s entry`;
       logActivity(request.user, 'entry_updated', `${request.user.display_name} edited ${whose} for ${usDate(entry.entry_date)}`, {

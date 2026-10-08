@@ -4,7 +4,21 @@ import { loadSessionUser, requireSession } from '../middleware/auth.js';
 import { publicUser } from '../utils/publicUser.js';
 import { logActivity } from '../activity.js';
 import { isReservedDisplayName } from '../utils/reservedNames.js';
-import { API_ENABLED } from '../config.js';
+import { API_ENABLED, MFA_FORCE_OFF, MFA_KEY_CONFIGURED } from '../config.js';
+import { completeSignIn } from '../utils/signIn.js';
+import {
+  DEVICE_COOKIE,
+  DEVICE_LIMIT_MESSAGE,
+  MAX_DEVICES,
+  PENDING_MS,
+  activeDeviceCount,
+  lockMinutesLeft,
+  mfaActive,
+  mfaStatusFor,
+  purgeExpiredDevices,
+  revokeDevices,
+  validDevice,
+} from '../mfa.js';
 
 function findOpenInvite(token) {
   const invite = db.prepare('SELECT * FROM invites WHERE token = ?').get(token);
@@ -21,8 +35,16 @@ export default async function authRoutes(fastify) {
     return {
       setupRequired: userCount === 0,
       user: user ? publicUser(user) : null,
+      previousLoginAt: user ? request.session.previousLoginAt || null : null,
       // Only admins are told; it decides whether the API Docs link is shown.
       apiEnabled: !!(user && user.is_admin && API_ENABLED),
+      mfa: user
+        ? {
+            ...mfaStatusFor(user),
+            // Only admins are told how the server is set up.
+            ...(user.is_admin ? { keyConfigured: MFA_KEY_CONFIGURED, forceOff: MFA_FORCE_OFF } : {}),
+          }
+        : null,
     };
   });
 
@@ -72,9 +94,41 @@ export default async function authRoutes(fastify) {
         return reply.code(401).send({ error: 'Invalid username or password' });
       }
 
-      request.session.userId = user.id;
-      db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
-      logActivity(user, 'sign_in', `${user.display_name} signed in`);
+      // Two-step sign-in (when an admin has turned it on). A browser that
+      // already passed a code in the last 7 days goes straight in. Otherwise the
+      // person is NOT signed in yet: only a short-lived "second step" marker is
+      // stored, which opens nothing.
+      if (mfaActive()) {
+        if (!MFA_KEY_CONFIGURED) {
+          request.log.error('two-step sign-in is on but MFA_ENCRYPTION_KEY is missing: refusing sign-in');
+          return reply.code(503).send({
+            error: 'Two-step sign-in is turned on, but this server is missing its MFA_ENCRYPTION_KEY. Ask an admin to restore it.',
+            code: 'MFA_KEY_MISSING',
+          });
+        }
+        const trusted = user.mfa_enabled_at && validDevice(user.id, request.cookies[DEVICE_COOKIE]);
+        if (!trusted) {
+          if (user.mfa_enabled_at) {
+            const wait = lockMinutesLeft(user);
+            if (wait) {
+              return reply.code(403).send({
+                error: `Too many wrong codes. Try again in ${wait} minute${wait === 1 ? '' : 's'}, or ask an admin to unlock your account.`,
+                code: 'MFA_LOCKED',
+              });
+            }
+            purgeExpiredDevices();
+            if (activeDeviceCount(user.id) >= MAX_DEVICES) {
+              logActivity(user, 'mfa_device_limit', `${user.display_name} was refused a sign-in: 5 active devices`);
+              return reply.code(403).send({ error: DEVICE_LIMIT_MESSAGE, code: 'MFA_DEVICE_LIMIT' });
+            }
+          }
+          const kind = user.mfa_enabled_at ? 'code' : 'setup';
+          request.session.mfaPending = { userId: user.id, kind, expires: Date.now() + PENDING_MS };
+          return { mfa_required: kind };
+        }
+      }
+
+      completeSignIn(request, user);
       return publicUser(user);
     }
   );
@@ -119,6 +173,8 @@ export default async function authRoutes(fastify) {
         password_hash,
         request.user.id
       );
+      // A new password ends every trusted device: each must pass a code again.
+      revokeDevices(request.user.id);
       logActivity(
         request.user,
         'password_changed',
@@ -181,13 +237,25 @@ export default async function authRoutes(fastify) {
     }
 
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(outcome.id);
-    request.session.userId = user.id;
     const inviter = db.prepare('SELECT display_name FROM users WHERE id = ?').get(outcome.invitedBy);
     logActivity(
       user,
       'user_joined',
       `${user.display_name} signed up using an invite from ${inviter ? inviter.display_name : 'an admin'}`
     );
+    // When two-step is on, a new person sets up their authenticator before they
+    // are signed in.
+    if (mfaActive()) {
+      if (!MFA_KEY_CONFIGURED) {
+        return reply.code(503).send({
+          error: 'Your account was created, but two-step sign-in is unavailable right now. Ask an admin to restore the server key, then sign in.',
+          code: 'MFA_KEY_MISSING',
+        });
+      }
+      request.session.mfaPending = { userId: user.id, kind: 'setup', expires: Date.now() + PENDING_MS };
+      return { mfa_required: 'setup' };
+    }
+    request.session.userId = user.id;
     return publicUser(user);
   });
 }

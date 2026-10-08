@@ -145,3 +145,53 @@ export const SYSTEM_USER_ID = db.transaction(() => {
       .run(username).lastInsertRowid
   );
 })();
+
+// --- v0.10.0: since-last-sign-in, edited marker, pinned notes, filters ---
+// Additive only. edited_at is set only when an entry's text or tags really
+// change (updated_at moves on every save, so it can't be used for this).
+// pinned_by_name is kept as text so deleting a person doesn't blank it.
+addColumnIfMissing('entries', 'edited_at', 'TEXT');
+addColumnIfMissing('entries', 'pinned_at', 'TEXT');
+addColumnIfMissing('entries', 'pinned_by_name', 'TEXT');
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_entries_created ON entries(created_at);
+  CREATE INDEX IF NOT EXISTS idx_entry_tags_tag ON entry_tags(tag_id);
+`);
+
+// --- v0.10.0: two-step sign-in ---
+// Additive only. Existing people are untouched; nobody is asked for anything
+// until an admin turns two-step on (app_meta key 'mfa_enabled').
+//  * mfa_secret_enc is the authenticator secret, encrypted (see mfa.js).
+//    mfa_enabled_at is set only once the person proved their app works.
+//  * mfa_last_step stops a code being used twice.
+//  * mfa_failed_count / mfa_locked_until are the 5-wrong-codes, 15-minute lock.
+//  * mfa_device_warning_closed remembers that the person closed the
+//    "5 devices" notice.
+addColumnIfMissing('users', 'mfa_secret_enc', 'TEXT');
+addColumnIfMissing('users', 'mfa_enabled_at', 'TEXT');
+addColumnIfMissing('users', 'mfa_last_step', 'INTEGER');
+addColumnIfMissing('users', 'mfa_failed_count', 'INTEGER NOT NULL DEFAULT 0');
+addColumnIfMissing('users', 'mfa_locked_until', 'TEXT');
+addColumnIfMissing('users', 'mfa_device_warning_closed', 'INTEGER NOT NULL DEFAULT 0');
+
+// Recovery codes and trusted devices hold only hashes, never the code or the
+// cookie value itself.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS user_recovery_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code_hash TEXT NOT NULL,
+    used_at TEXT,
+    UNIQUE (user_id, code_hash)
+  );
+
+  CREATE TABLE IF NOT EXISTS mfa_trusted_devices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT UNIQUE NOT NULL,
+    label TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    expires_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_mfa_devices_user ON mfa_trusted_devices(user_id);
+`);

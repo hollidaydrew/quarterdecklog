@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Modal from './Modal.jsx';
 import { api } from '../api.js';
+import TwoStepSection from './TwoStepSection.jsx';
 
 // Lets any signed-in user change their own display name, username and
 // password. Roles are not editable here: only an admin can change a role.
@@ -74,6 +75,8 @@ export default function ProfileModal({ user, onClose, onSaved }) {
             <button type="submit" disabled={profileBusy}>{profileBusy ? 'Saving…' : 'Save profile'}</button>
           </div>
         </form>
+
+        <TwoStepSection onChanged={onSaved} />
 
         <form onSubmit={changePassword} className="stack profile-password">
           <h4 style={{ margin: 0 }}>Change password</h4>
