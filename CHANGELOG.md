@@ -3,6 +3,25 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.11.0] - 2026-10-08
+
+### Added
+- **Search page.** Search is now a tab beside List, Calendar and Rollup, instead of a pop-up, and is no longer in the menu. A large search box with the filters under it: dates (single day or range, plus Year and Q1 to Q4), tags, person, and Newest or Oldest first. Press Enter or click Search; changing a filter afterwards runs the same words again.
+  - Matching works the way most search boxes do: every word must match, in any order, from the start of a word (`disk` finds `diskspace`); case and accents are ignored; `"quotes"` need the words together, in that order; `-word` leaves a word out; punctuation is ignored. Words like AND, OR and NEAR are just words.
+  - Results are whole entries, grouped by day with the matched words highlighted, paged like Rollup, up to the newest 5,000 (the old pop-up stopped at 100 and showed only a snippet).
+  - Print / PDF and Export CSV work like Rollup's and cover every result and the filters in use.
+  - What you searched for is kept in the web address, so Back, refresh and a copied link all return to the same results.
+
+### Changed
+- **Rollup and Search share a new layout.** One boxed Filters area (Dates, Tags, Person, with a Clear filters button), then a results header that holds the range, the counts, and the Print / PDF and Export CSV buttons that act on them, then the entries with each day ruled off and its entry count. On a phone the filters fold away behind a button that shows how many are on. The pager is one slim line. Printing is unchanged.
+- Search is much faster, and stays fast as the log grows: it now uses a full-text index instead of reading every entry for every search. On a test log of 50,000 entries a search takes a few milliseconds.
+- Matching is by word start rather than any part of a word, so typing the middle of a word (`isk`) no longer finds `disk`.
+
+### Upgrading from 0.10.0
+- Your data is kept. The database gets one new search index, built in the background the first time the server starts (about 2 seconds for 50,000 entries). Until it finishes, Search says it is still getting ready. On later starts the index is quietly refreshed.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.10.0] - 2026-10-08
 
 ### Added

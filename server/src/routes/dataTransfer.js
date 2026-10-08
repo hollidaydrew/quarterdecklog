@@ -3,6 +3,7 @@ import { requireAdmin } from '../middleware/auth.js';
 import { sanitizeEntryBody } from '../utils/sanitize.js';
 import { isValidDateString } from '../utils/date.js';
 import { logActivity, APP_VERSION } from '../activity.js';
+import { indexEntry } from '../searchIndex.js';
 
 // Admin export and restore of the whole log (entries, tags and who wrote them).
 //
@@ -173,6 +174,7 @@ function apply({ users, tags, entries }) {
     if (isDuplicate(authorId, e)) continue;
     const id = insert.run(authorId, e.body, e.entry_date, e.created_at, e.updated_at, e.edited_at).lastInsertRowid;
     for (const key of e.tagKeys) link.run(id, tagIds.get(key));
+    indexEntry(Number(id));
     added += 1;
   }
   return { people: peopleCreated, tags: tagsCreated, entries: added, alreadyThere: entries.length - added, total: entries.length };

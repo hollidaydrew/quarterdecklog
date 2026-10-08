@@ -3,6 +3,8 @@ import { requireAuth } from '../middleware/auth.js';
 import { sanitizeEntryBody } from '../utils/sanitize.js';
 import { isValidDateString, isValidYearMonth, isFutureEntryDate } from '../utils/date.js';
 import { htmlToText, logActivity, usDate } from '../activity.js';
+import { parseSearchQuery } from '../utils/searchQuery.js';
+import { SEARCH_AVAILABLE, indexEntry, indexStatus, removeFromIndex } from '../searchIndex.js';
 
 // Most entries the by-tag page returns; keep in step with LIMIT in web/src/pages/TagPage.jsx.
 const BY_TAG_LIMIT = 1000;
@@ -14,6 +16,8 @@ const ROLLUP_LIMIT = 5000;
 const MAX_FILTER_TAGS = 20;
 const ID_RE = /^\d{1,9}$/;
 const MAX_PINNED = 5;
+// Most entries one search returns (the same as the Rollup limit).
+const SEARCH_LIMIT = 5000;
 
 function parseEntryFilters(query) {
   let tagIds = [];
@@ -45,19 +49,6 @@ function filterClause({ tagIds, authorId }) {
     params.push(...tagIds);
   }
   return { sql, params };
-}
-
-// Most matches the search returns, and the length of the snippet shown for each.
-const SEARCH_LIMIT = 100;
-const SNIPPET_CHARS = 200;
-
-// A short stretch of text around the first match, so the result shows why it matched.
-function snippetAround(text, term) {
-  const flat = text.replace(/\s+/g, ' ');
-  const at = term ? flat.toLowerCase().indexOf(term) : -1;
-  const start = at > 60 ? at - 60 : 0;
-  const piece = flat.slice(start, start + SNIPPET_CHARS);
-  return `${start > 0 ? '…' : ''}${piece}${start + SNIPPET_CHARS < flat.length ? '…' : ''}`;
 }
 
 export function attachTags(entry) {
@@ -282,50 +273,67 @@ export default async function entryRoutes(fastify) {
     return rows.map(attachTags);
   });
 
-  // Search every entry's text and tag names, newest first. Every word typed
-  // must appear somewhere in the entry (case-insensitive). Entries are stored
-  // as HTML, so the text is matched after the markup is stripped.
-  fastify.get('/api/entries/search', { preHandler: requireAuth }, async (request, reply) => {
-    const q = typeof request.query.q === 'string' ? request.query.q.trim().toLowerCase() : '';
-    if (q.length < 2 || q.length > 100) {
-      return reply.code(400).send({ error: 'Search for 2 to 100 characters' });
-    }
-    const words = q.split(/\s+/);
-    const filters = parseEntryFilters(request.query);
-    if (filters.error) return reply.code(400).send({ error: filters.error });
-    const extra = filterClause(filters);
-    const rows = db
-      .prepare(
-        `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
-                (users.deleted_at IS NOT NULL) AS author_deleted
-         FROM entries
-         JOIN users ON users.id = entries.author_id
-         WHERE 1 = 1${extra.sql}
-         ORDER BY entries.entry_date DESC, entries.created_at DESC, entries.id DESC`
-      )
-      .all(...extra.params);
-    const results = [];
-    let total = 0;
-    for (const row of rows) {
-      const entry = attachTags(row);
-      const text = htmlToText(row.body, Infinity);
-      const haystack = `${text}\n${entry.tags.map((t) => t.name).join('\n')}`.toLowerCase();
-      if (!words.every((w) => haystack.includes(w))) continue;
-      total += 1;
-      if (results.length < SEARCH_LIMIT) {
-        results.push({
-          id: entry.id,
-          entry_date: entry.entry_date,
-          created_at: entry.created_at,
-          author_name: entry.author_name,
-          author_deleted: entry.author_deleted,
-          tags: entry.tags,
-          snippet: snippetAround(text, words.find((w) => text.toLowerCase().includes(w))),
-        });
+  // Search. Words typed must all appear (from the start of a word) in an entry's
+  // text or tag names; "quoted words" must appear together; a leading minus
+  // leaves a word out. Matching is done by the full-text index (searchIndex.js).
+  // Optional date range, tags, person and sort, like Rollup. Returns whole
+  // entries (the newest or oldest SEARCH_LIMIT of them), so the page can show,
+  // print and export them. `terms` is what to highlight. `indexing` is set only
+  // while the index is still being built after an upgrade.
+  fastify.get(
+    '/api/entries/search',
+    { preHandler: requireAuth, config: { rateLimit: { max: 120, timeWindow: '1 minute' } } },
+    async (request, reply) => {
+      if (!SEARCH_AVAILABLE) return reply.code(503).send({ error: 'Search is unavailable on this server.' });
+      const q = typeof request.query.q === 'string' ? request.query.q.trim() : '';
+      if (q.length < 2 || q.length > 100) {
+        return reply.code(400).send({ error: 'Search for 2 to 100 characters' });
       }
+      const parsed = parseSearchQuery(q);
+      if (parsed.error) return reply.code(400).send({ error: parsed.error });
+      const filters = parseEntryFilters(request.query);
+      if (filters.error) return reply.code(400).send({ error: filters.error });
+      const extra = filterClause(filters);
+
+      const { from, to } = request.query;
+      let dateSql = '';
+      const dateParams = [];
+      if (from !== undefined && from !== '') {
+        if (!isValidDateString(from)) return reply.code(400).send({ error: 'from must be a valid YYYY-MM-DD date' });
+        dateSql += ' AND entries.entry_date >= ?';
+        dateParams.push(from);
+      }
+      if (to !== undefined && to !== '') {
+        if (!isValidDateString(to)) return reply.code(400).send({ error: 'to must be a valid YYYY-MM-DD date' });
+        dateSql += ' AND entries.entry_date <= ?';
+        dateParams.push(to);
+      }
+      if (dateParams.length === 2 && from > to) {
+        return reply.code(400).send({ error: 'from must be on or before to' });
+      }
+      const dir = request.query.sort === 'oldest' ? 'ASC' : 'DESC';
+
+      const rows = db
+        .prepare(
+          `SELECT entries.*, users.display_name AS author_name, users.username AS author_username,
+                  (users.deleted_at IS NOT NULL) AS author_deleted
+           FROM entry_search
+           JOIN entries ON entries.id = entry_search.rowid
+           JOIN users ON users.id = entries.author_id
+           WHERE entry_search MATCH ?${dateSql}${extra.sql}
+           ORDER BY entries.entry_date ${dir}, entries.created_at ${dir}, entries.id ${dir}
+           LIMIT ?`
+        )
+        .all(parsed.match, ...dateParams, ...extra.params, SEARCH_LIMIT + 1);
+      const truncated = rows.length > SEARCH_LIMIT;
+      return {
+        entries: rows.slice(0, SEARCH_LIMIT).map(attachTags),
+        truncated,
+        terms: parsed.terms,
+        indexing: indexStatus(),
+      };
     }
-    return { total, results };
-  });
+  );
 
   fastify.post('/api/entries', { preHandler: requireAuth }, async (request, reply) => {
     const { body, entry_date, tag_ids } = request.body || {};
@@ -344,6 +352,7 @@ export default async function entryRoutes(fastify) {
       .prepare('INSERT INTO entries (author_id, body, entry_date) VALUES (?, ?, ?)')
       .run(request.user.id, clean, entry_date);
     setEntryTags(result.lastInsertRowid, tag_ids);
+    indexEntry(result.lastInsertRowid);
     logActivity(request.user, 'entry_created', `${request.user.display_name} added an entry for ${usDate(entry_date)}`, {
       entry_id: Number(result.lastInsertRowid),
       entry_date,
@@ -377,6 +386,7 @@ export default async function entryRoutes(fastify) {
     const beforeTagIds = db.prepare('SELECT tag_id FROM entry_tags WHERE entry_id = ?').all(entry.id).map((r) => r.tag_id).sort();
     db.prepare("UPDATE entries SET body = ?, updated_at = datetime('now') WHERE id = ?").run(clean, entry.id);
     setEntryTags(entry.id, tag_ids);
+    indexEntry(entry.id);
     const afterTagIds = db.prepare('SELECT tag_id FROM entry_tags WHERE entry_id = ?').all(entry.id).map((r) => r.tag_id).sort();
     if (clean !== entry.body || beforeTagIds.join() !== afterTagIds.join()) {
       db.prepare("UPDATE entries SET edited_at = datetime('now') WHERE id = ?").run(entry.id);
@@ -410,6 +420,7 @@ export default async function entryRoutes(fastify) {
     const beforeTags = tagNamesFor(entry.id);
     const author = db.prepare('SELECT display_name FROM users WHERE id = ?').get(entry.author_id);
     db.prepare('DELETE FROM entries WHERE id = ?').run(entry.id);
+    removeFromIndex(entry.id);
     const whose = entry.author_id === request.user.id ? 'an entry' : `${author.display_name}'s entry`;
     logActivity(request.user, 'entry_deleted', `${request.user.display_name} deleted ${whose} for ${usDate(entry.entry_date)}`, {
       entry_id: entry.id,

@@ -1,18 +1,21 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import TagChip from './TagChip.jsx';
 import { formatDateTimeShort, isLateEntry } from '../lib/dates.js';
 import { entryTintClass } from '../lib/easterEggTags.js';
 import { copyText, entryToText } from '../lib/entryText.js';
+import { highlightHtml } from '../lib/highlight.js';
 
 // Easter egg tags (see lib/easterEggTags.js, deliberately left out of the User
 // Guide and release notes) can tint a card in the day view, such as the light
 // orange "Incident" card. `plain` turns the tint off, as the special tag pages do.
 // onPin (optional) shows the pin icon; without it the card has no pin button.
-export default function EntryCard({ entry, canEdit, onEdit, onDelete, onPin, plain = false }) {
+// highlight (optional): the search terms to mark inside the entry text.
+export default function EntryCard({ entry, canEdit, onEdit, onDelete, onPin, highlight, plain = false }) {
   const tint = plain ? '' : entryTintClass(entry);
   const [copy, setCopy] = useState('idle'); // 'idle' | 'ok' | 'fail'
   const pinned = !!entry.pinned_at;
   const late = isLateEntry(entry);
+  const bodyHtml = useMemo(() => highlightHtml(entry.body, highlight), [entry.body, highlight]);
 
   const doCopy = async () => {
     setCopy((await copyText(entryToText(entry))) ? 'ok' : 'fail');
@@ -63,7 +66,7 @@ export default function EntryCard({ entry, canEdit, onEdit, onDelete, onPin, pla
           )}
         </span>
       </div>
-      <div className="entry-body trix-content" dangerouslySetInnerHTML={{ __html: entry.body }} />
+      <div className="entry-body trix-content" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
       {entry.tags.length > 0 && (
         <div className="entry-tags">
           {entry.tags.map((tag) => (
