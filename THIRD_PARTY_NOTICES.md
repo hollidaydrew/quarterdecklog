@@ -75,7 +75,7 @@ SOFTWARE.
 ## 3. Packages under this license text
 
 - @fastify/cookie@11.1.2 (MIT) - https://github.com/fastify/fastify-cookie.git
-- @fastify/static@10.1.4 (MIT) - https://github.com/fastify/fastify-static.git
+- @fastify/static@10.1.5 (MIT) - https://github.com/fastify/fastify-static.git
 - @fastify/swagger@9.9.1 (MIT) - https://github.com/fastify/fastify-swagger.git
 - fastify-plugin@6.0.0 (MIT) - https://github.com/fastify/fastify-plugin.git
 
@@ -2097,29 +2097,15 @@ SOFTWARE.
 ================================================================================
 ## 57. Packages under this license text
 
-- launder@1.7.1 (MIT) - https://github.com/apostrophecms/apostrophe.git
+- launder@1.7.2 (MIT) - https://github.com/apostrophecms/apostrophe.git
 
-MIT License
+Copyright (c) 2021 Apostrophe Technologies, Inc.
 
-Copyright (c) Apostrophe Technologies, Inc.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ================================================================================
 ## 58. Packages under this license text
@@ -2970,7 +2956,7 @@ SOFTWARE.
 ================================================================================
 ## 88. Packages under this license text
 
-- sanitize-html@2.17.7 (MIT) - https://github.com/apostrophecms/apostrophe.git
+- sanitize-html@2.18.0 (MIT) - https://github.com/apostrophecms/apostrophe.git
 
 Copyright (c) 2013, 2014, 2015 P'unk Avenue LLC
 
@@ -3256,7 +3242,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ================================================================================
 ## 100. Packages under this license text
 
-- vite@8.3.1 (MIT) - https://github.com/vitejs/vite.git
+- vite@8.3.2 (MIT) - https://github.com/vitejs/vite.git
 
 # Vite core license
 Vite is released under the MIT license:
@@ -3934,35 +3920,6 @@ Repository: https://github.com/expressjs/cors
 
 ---------------------------------------
 
-## cross-spawn
-License: MIT
-By: André Cruz
-Repository: https://github.com/moxystudio/node-cross-spawn
-
-> The MIT License (MIT)
-> 
-> Copyright (c) 2018 Made With MOXY Lda <hello@moxy.studio>
-> 
-> Permission is hereby granted, free of charge, to any person obtaining a copy
-> of this software and associated documentation files (the "Software"), to deal
-> in the Software without restriction, including without limitation the rights
-> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-> copies of the Software, and to permit persons to whom the Software is
-> furnished to do so, subject to the following conditions:
-> 
-> The above copyright notice and this permission notice shall be included in
-> all copies or substantial portions of the Software.
-> 
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-> THE SOFTWARE.
-
----------------------------------------
-
 ## cssesc
 License: MIT
 By: Mathias Bynens
@@ -4486,29 +4443,6 @@ Repository: https://github.com/Rich-Harris/is-reference
 
 ---------------------------------------
 
-## isexe, which
-License: ISC
-By: Isaac Z. Schlueter
-Repositories: https://github.com/isaacs/isexe, https://github.com/isaacs/node-which
-
-> The ISC License
-> 
-> Copyright (c) Isaac Z. Schlueter and Contributors
-> 
-> Permission to use, copy, modify, and/or distribute this software for any
-> purpose with or without fee is hereby granted, provided that the above
-> copyright notice and this permission notice appear in all copies.
-> 
-> THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-> WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-> MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-> ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-> WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-> ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
-> IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
----------------------------------------
-
 ## js-tokens
 License: MIT
 By: Simon Lydell
@@ -4929,23 +4863,6 @@ Repository: https://github.com/pillarjs/parseurl
 
 ---------------------------------------
 
-## path-key, shebang-regex
-License: MIT
-By: Sindre Sorhus
-Repositories: https://github.com/sindresorhus/path-key, https://github.com/sindresorhus/shebang-regex
-
-> MIT License
-> 
-> Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
-> 
-> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-> 
-> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-> 
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
----------------------------------------
-
 ## periscopic
 License: MIT
 Repository: https://github.com/Rich-Harris/periscopic
@@ -5256,23 +5173,6 @@ Repositories: https://github.com/lukeed/resolve.exports, https://github.com/luke
 
 ---------------------------------------
 
-## shebang-command
-License: MIT
-By: Kevin Mårtensson
-Repository: https://github.com/kevva/shebang-command
-
-> MIT License
-> 
-> Copyright (c) Kevin Mårtensson <kevinmartensson@gmail.com> (github.com/kevva)
-> 
-> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-> 
-> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-> 
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
----------------------------------------
-
 ## shell-quote
 License: MIT
 By: James Halliday
@@ -5357,6 +5257,35 @@ Repository: https://github.com/antfu/strip-literal
 > MIT License
 > 
 > Copyright (c) 2022 Anthony Fu <https://github.com/antfu>
+> 
+> Permission is hereby granted, free of charge, to any person obtaining a copy
+> of this software and associated documentation files (the "Software"), to deal
+> in the Software without restriction, including without limitation the rights
+> to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+> copies of the Software, and to permit persons to whom the Software is
+> furnished to do so, subject to the following conditions:
+> 
+> The above copyright notice and this permission notice shall be included in all
+> copies or substantial portions of the Software.
+> 
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+> SOFTWARE.
+
+---------------------------------------
+
+## tinyexec
+License: MIT
+By: James Garbutt
+Repository: https://github.com/tinylibs/tinyexec
+
+> MIT License
+> 
+> Copyright (c) 2024 Tinylibs
 > 
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
