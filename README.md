@@ -6,18 +6,25 @@ Click a day on the calendar, see everything that was logged. Write entries in a 
 
 ## Features
 
-- Single shared team log — everyone sees the same timeline
-- List view: a scrolling list of dates on the left, the selected day's entries on the right, with a single-day or date-range filter
-- Calendar view: click a day, see that day's entries in order
+**Logging**
+- One shared team log: everyone sees the same timeline, and every entry shows who wrote it and when
 - Rich-text entry editor (bold, italic, strikethrough, links, heading, quotes, code, lists)
-- Admin-managed, color-coded tags; filter a day's entries by tag
-- Invite-link based onboarding — no public signup
-- Admin tools: manage tags, invites and team members (edit, reset password, delete, last login)
+- Admin-managed, color-coded tags; click tags above a day's entries to filter them
+- Only an entry's author, or an admin, can edit or delete it
+
+**Finding things**
+- List view: a scrolling list of dates with the selected day's entries beside it, a single-day or date-range filter, an "Entries" check box that hides empty days, and one-click Year / Q1 to Q4 buttons
+- Calendar view: click a day, see that day's entries, newest first
+- Search: every entry's text and tags, newest first, with a short excerpt
+- Rollup: every entry in a date range on one page, with Print / PDF and Export CSV
+
+**Running it**
+- Invite-link onboarding; there is no public signup
+- Admin tools: tags, invites, team members (edit, reset password, delete, last login) and API keys
 - Activity log (admins): the last 5,000 events, including entry text and changes, with CSV export
 - My profile (everyone): change your own display name, username and password
-- API (off by default): admin-issued keys let scripts add and read entries and tags, with a built-in Swagger "API Docs" page
-- In-app User Guide, plus release notes and credits
-- Release notes: click the version in the footer, or read [CHANGELOG.md](CHANGELOG.md)
+- API (off by default): admin-issued, named keys let scripts add and read entries and tags, with an admin-only Swagger "API Docs" page
+- In-app User Guide, release notes (click the version in the footer, or read [CHANGELOG.md](CHANGELOG.md)) and credits
 - Runs as a single Docker container with a SQLite database on a mounted volume
 
 ## Quick start
@@ -49,6 +56,24 @@ docker compose up -d
 ```
 
 See [CHANGELOG.md](CHANGELOG.md) for what changed in each version. Everyone is signed out when the container restarts.
+
+## Development
+
+You can run QuarterDeckLog without Docker while you work on it. You need Node.js 24 and two terminals.
+
+```
+# Terminal 1: the server (port 7272)
+cd server
+npm install
+SESSION_SECRET=$(openssl rand -hex 32) DB_PATH=/tmp/qdl-dev.db API_ENABLED=true npm run dev
+
+# Terminal 2: the web app (http://localhost:5173, proxies /api to the server)
+cd web
+npm install
+npm run dev
+```
+
+`DB_PATH` is a scratch database, so delete the file to start over. After changing dependencies, run `npm run generate:notices` and `npm run check:credits` from the repo root (see below).
 
 ## Configuration
 
@@ -111,7 +136,7 @@ If you find a security issue, please open a private security advisory on GitHub 
 
 ## Tech stack
 
-- Backend: Node.js 24, Fastify, better-sqlite3 (API docs: Swagger UI)
+- Backend: Node.js 24, Fastify, better-sqlite3; the API Docs page is Swagger UI
 - Frontend: React, Vite, [Trix](https://github.com/basecamp/trix) (rich-text editor)
 - Single multi-stage Dockerfile, SQLite on a named Docker volume
 
