@@ -796,6 +796,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .since-banner, .pinned-notes { flex-shrink: 0; }
 .pinned-notes { max-height: 40vh; overflow-y: auto; }
 .pinned-note.card { padding: 10px 14px; }
+/* A tinted pinned note keeps its Haze Gray left edge, so it still reads as pinned. */
+.card.pinned-note.entry-incident { border-left-color: var(--color-primary); }
 .pinned-note .entry-body { font-size: 14px; }
 .button-link {
   display: inline-block; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--color-border);
