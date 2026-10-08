@@ -3,6 +3,32 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.8.0] - 2026-10-08
+
+### Added
+- API access, so scripts and other systems can add and read entries and tags. It is off until you set `API_ENABLED=true` in `.env`.
+  - Admin, then API keys: create a key with a friendly name (such as "Nagios"), read-only or read and write, and no expiry or 30 days, 90 days or 1 year. The key is shown once, then only its first characters. You can see when each key was last used and revoke it at any time.
+  - Entries added through the API belong to a new built-in user called System. It can't sign in and does not appear in the Team list. The Activity log shows the key's friendly name as who did it.
+  - Endpoints under `/api/v1`: list and create tags; list entries for a date or a date range (paged); get, add, replace and delete an entry. Entry text can be plain text or HTML, and tags can be given by name or id. A key can only change or delete entries that were written through the API, never an entry written by a person.
+  - API Docs, a Swagger page that describes every endpoint and lets you try them. Admins open it from the menu or from Admin, then API keys.
+  - Each key is limited to 60 calls a minute, and every address to 120.
+- Activity log: new events for API keys being created and revoked.
+
+### Changed
+- A person can no longer use "System" or the name of an active API key as their display name, so the Activity log can't be faked.
+
+### Security
+- API keys are 256-bit random values and only a hash is stored, so a copy of the database can't be used to call the API. A wrong, expired or revoked key all get the same answer.
+- The API does not allow other websites to call it from a browser, and a key only works on `/api/v1`, never on the app's own pages or the Admin screens.
+- The server no longer keeps a session in memory for visitors who have not signed in.
+- Updated two supporting packages to clear advisories (a server one used when cleaning entry text, and DOMPurify inside the editor).
+
+### Upgrading from 0.7.0
+- Your data is kept. The database gets one new table (API keys) and one new column, and a System user is added. Nothing is rewritten.
+- Add `API_ENABLED=true` to `.env` if you want the API; leave it out to keep the API off.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.7.0] - 2026-10-06
 
 ### Added
