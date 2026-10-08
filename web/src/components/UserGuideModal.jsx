@@ -81,7 +81,7 @@ export default function UserGuideModal({ user, onClose }) {
       {user.is_admin && (
         <Section title="For admins">
           <ul>
-            <li><strong>Tags:</strong> Admin, then Tags. Add a tag with a name and color, or delete one. Deleting a tag removes it from the entries that used it.</li>
+            <li><strong>Tags:</strong> Admin, then Tags. Add a tag with a name and color, change a tag's color with its Color button (a tag's name can't be changed), or delete one. Deleting a tag removes it from the entries that used it.</li>
             <li><strong>Invites:</strong> Admin, then Invites, then Generate invite link. Send the link to the new person. Each link works once and expires after 7 days. You can copy or revoke a pending link.</li>
             <li><strong>Team:</strong> Admin, then Team. Edit changes a name, username or role. Reset password creates a temporary password to share privately. Delete removes someone's access but keeps their entries. The last time each person signed in is shown under their name.</li>
             <li><strong>Activity log:</strong> open the menu and choose Activity log. It lists the last 5,000 events: entries added, edited and deleted, invites, sign-ups, sign-ins, tag and profile changes, version updates, API key changes, pins, exports and imports, and two-step sign-in changes. Choose Show changes to see an entry's text and what was changed. Choose Export CSV to download every event, with its entry text and changes, as a spreadsheet file.</li>
