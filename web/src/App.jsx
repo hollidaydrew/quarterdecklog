@@ -153,7 +153,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
-        <Footer isAdmin={!!user.is_admin} />
+        <Footer />
       </div>
     );
   }

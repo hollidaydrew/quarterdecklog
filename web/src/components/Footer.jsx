@@ -5,7 +5,7 @@ import { formatUs } from '../lib/dates.js';
 
 // Shown only after sign-in. 40px tall, pinned to the bottom of the window.
 // Only the version text is the link; it opens the release notes.
-export default function Footer({ isAdmin = false }) {
+export default function Footer() {
   const [open, setOpen] = useState(false);
   const label = CURRENT_RELEASE
     ? `v${APP_VERSION} · ${formatUs(CURRENT_RELEASE.date)}`
@@ -18,7 +18,7 @@ export default function Footer({ isAdmin = false }) {
           {label}
         </button>
       </footer>
-      {open && <ReleaseNotesModal onClose={() => setOpen(false)} isAdmin={isAdmin} />}
+      {open && <ReleaseNotesModal onClose={() => setOpen(false)} />}
     </>
   );
 }

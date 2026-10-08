@@ -162,7 +162,7 @@ If you find a security issue, please open a private security advisory on GitHub 
 ## Releasing
 
 1. Update the version in the root, `server/` and `web/` `package.json` files and lockfiles.
-2. Add the release to [CHANGELOG.md](CHANGELOG.md) (the footer and release notes read it).
+2. Add the release to [CHANGELOG.md](CHANGELOG.md) (the footer and release notes read it). The release notes shown in the app include only the **Added**, **Changed**, **Fixed** and **Removed** sections, so write those as plain reports of what changed in the app. Put security and dependency updates under **Security** and server instructions under **Upgrading from x.y.z**; they stay in the file for GitHub readers but are not shown in the app.
 3. If dependencies changed: `npm run generate:notices` and `npm run check:credits`, and update [CREDITS.md](CREDITS.md).
 
 ## License
