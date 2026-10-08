@@ -32,6 +32,19 @@ function TagManager() {
     load();
   };
 
+  // Only a tag's color can be changed, never its name.
+  const [editing, setEditing] = useState(null); // { id, color }
+  const saveColor = async () => {
+    setError('');
+    try {
+      await api.put(`/api/tags/${editing.id}`, { color: editing.color });
+      setEditing(null);
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div>
       <form onSubmit={addTag} style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
@@ -41,12 +54,35 @@ function TagManager() {
       </form>
       {error && <p className="error-text">{error}</p>}
       <div className="tag-filter-row">
-        {tags.map((tag) => (
-          <span key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <TagChip tag={tag} />
-            <button className="secondary" style={{ padding: '2px 8px' }} onClick={() => deleteTag(tag)}>&times;</button>
-          </span>
-        ))}
+        {tags.map((tag) =>
+          editing && editing.id === tag.id ? (
+            <span key={tag.id} className="tag-color-edit">
+              <TagChip tag={{ ...tag, color: editing.color }} />
+              <input
+                type="color"
+                value={editing.color}
+                onChange={(e) => setEditing({ id: tag.id, color: e.target.value })}
+                aria-label={`Color for the ${tag.name} tag`}
+                style={{ width: 40, padding: 2 }}
+              />
+              <button type="button" style={{ padding: '2px 10px' }} onClick={saveColor}>Save</button>
+              <button type="button" className="secondary" style={{ padding: '2px 10px' }} onClick={() => setEditing(null)}>Cancel</button>
+            </span>
+          ) : (
+            <span key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <TagChip tag={tag} />
+              <button
+                className="secondary"
+                style={{ padding: '2px 8px' }}
+                onClick={() => setEditing({ id: tag.id, color: tag.color })}
+                aria-label={`Change the color of the ${tag.name} tag`}
+              >
+                Color
+              </button>
+              <button className="secondary" style={{ padding: '2px 8px' }} onClick={() => deleteTag(tag)} aria-label={`Delete the ${tag.name} tag`}>&times;</button>
+            </span>
+          )
+        )}
         {tags.length === 0 && <p className="muted">No tags yet.</p>}
       </div>
     </div>
@@ -298,8 +334,8 @@ function UserRoster({ currentUser, mfaActive, onSelfChanged }) {
             </span>
             <span className="row-actions">
               <button className="secondary" onClick={() => setEditing(u)}>Edit</button>
-              {u.mfa_locked && <button className="secondary" onClick={() => unlock(u)}>Unlock</button>}
-              {u.mfa_enrolled && <button className="secondary" onClick={() => resetTwoStep(u)}>Reset two-step</button>}
+              {!!u.mfa_locked && <button className="secondary" onClick={() => unlock(u)}>Unlock</button>}
+              {!!u.mfa_enrolled && <button className="secondary" onClick={() => resetTwoStep(u)}>Reset two-step</button>}
               {!isSelf && <button className="secondary" onClick={() => resetPassword(u)}>Reset password</button>}
               {!isSelf && <button className="danger" onClick={() => deleteUser(u)}>Delete</button>}
             </span>
@@ -347,7 +383,7 @@ function ApiKeyManager() {
   const [info, setInfo] = useState(null); // { enabled, keys } | null while loading
   const [name, setName] = useState('');
   const [scope, setScope] = useState('read');
-  const [expires, setExpires] = useState('');
+  const [expires, setExpires] = useState('90'); // every key expires; 90 days unless changed
   const [created, setCreated] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -363,7 +399,7 @@ function ApiKeyManager() {
       const key = await api.post('/api/admin/api-keys', {
         name,
         scope,
-        expires_in_days: expires ? Number(expires) : null,
+        expires_in_days: Number(expires),
       });
       setCreated(key);
       setName('');
@@ -416,9 +452,10 @@ function ApiKeyManager() {
               <option value="write">Read and write</option>
             </select>
             <select value={expires} onChange={(e) => setExpires(e.target.value)} aria-label="Expires" style={{ width: 'auto' }}>
-              <option value="">Never expires</option>
               <option value="30">Expires in 30 days</option>
+              <option value="60">Expires in 60 days</option>
               <option value="90">Expires in 90 days</option>
+              <option value="180">Expires in 180 days</option>
               <option value="365">Expires in 1 year</option>
             </select>
             <button type="submit" disabled={busy}>Create key</button>
@@ -434,7 +471,7 @@ function ApiKeyManager() {
               {k.name}{' '}
               <span className="muted">
                 {k.scope === 'write' ? 'read and write' : 'read only'} · {k.key_prefix}…
-                {k.expired ? ' · expired' : k.expires_at ? ` · expires ${formatUsFromDate(new Date(k.expires_at))}` : ''}
+                {k.expired ? ' · expired' : k.expires_at ? ` · expires ${formatUsFromDate(new Date(k.expires_at))}` : ' · never expires'}
               </span>
             </span>
             <span className="muted last-login">

@@ -6,7 +6,8 @@ import { API_ENABLED } from '../config.js';
 
 const MAX_NAME = 60;
 const MAX_ACTIVE_KEYS = 25;
-const EXPIRY_DAYS = new Set([30, 90, 365]);
+// Every key expires. (Keys made before this rule have no expiry and keep working until revoked.)
+const EXPIRY_DAYS = new Set([30, 60, 90, 180, 365]);
 
 function describe(row) {
   return {
@@ -44,8 +45,8 @@ export default async function apiKeyRoutes(fastify) {
     if (scope !== 'read' && scope !== 'write') {
       return reply.code(400).send({ error: "Scope must be 'read' or 'write'" });
     }
-    if (expires_in_days != null && !EXPIRY_DAYS.has(expires_in_days)) {
-      return reply.code(400).send({ error: 'Expiry must be 30, 90 or 365 days, or none' });
+    if (!EXPIRY_DAYS.has(expires_in_days)) {
+      return reply.code(400).send({ error: 'Choose when the key expires: 30, 60, 90 or 180 days, or 1 year' });
     }
 
     // The name is what the Activity log shows as the actor, so it can't look
@@ -65,7 +66,7 @@ export default async function apiKeyRoutes(fastify) {
     }
 
     const { key, hash, prefix } = generateApiKey();
-    const expiresAt = expires_in_days ? new Date(Date.now() + expires_in_days * 86400000).toISOString() : null;
+    const expiresAt = new Date(Date.now() + expires_in_days * 86400000).toISOString();
     const result = db
       .prepare(
         'INSERT INTO api_keys (name, key_prefix, key_hash, scope, created_by, created_by_name, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
@@ -74,7 +75,7 @@ export default async function apiKeyRoutes(fastify) {
     logActivity(request.user, 'api_key_created', `${request.user.display_name} created the API key "${cleanName}"`, {
       name: cleanName,
       access: scope === 'write' ? 'read and write' : 'read only',
-      expires: expiresAt || 'never',
+      expires: expiresAt,
     });
     const row = db.prepare('SELECT * FROM api_keys WHERE id = ?').get(result.lastInsertRowid);
     // The only time the key itself is ever returned.
