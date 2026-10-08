@@ -40,24 +40,20 @@ export default async function tagRoutes(fastify) {
     const tag = db.prepare('SELECT * FROM tags WHERE id = ?').get(request.params.id);
     if (!tag) return reply.code(404).send({ error: 'Tag not found' });
 
+    // Only the color can be changed. A tag's text is what entries, search and
+    // special highlights (such as Incident) are matched on, so it stays as written.
     const { name, color } = request.body || {};
-    if (color && !COLOR_RE.test(color)) {
+    if (name !== undefined && String(name).trim() !== tag.name) {
+      return reply.code(400).send({ error: "A tag's name can't be changed. Delete the tag and add a new one instead." });
+    }
+    if (typeof color !== 'string' || !COLOR_RE.test(color)) {
       return reply.code(400).send({ error: 'Color must be a hex value like #5B7CFA' });
     }
-    db.prepare('UPDATE tags SET name = ?, color = ? WHERE id = ?').run(
-      (name || tag.name).trim(),
-      color || tag.color,
-      tag.id
-    );
+    db.prepare('UPDATE tags SET color = ? WHERE id = ?').run(color, tag.id);
     const updated = db.prepare('SELECT * FROM tags WHERE id = ?').get(tag.id);
-    // Search matches tag names, so entries with this tag are re-indexed under the new name.
-    if (updated.name !== tag.name) reindexEntries(entryIdsWithTag(tag.id));
-    if (updated.name !== tag.name || updated.color !== tag.color) {
-      logActivity(request.user, 'tag_updated', `${request.user.display_name} edited the tag "${tag.name}"`, {
-        changes: [
-          ...(updated.name !== tag.name ? [{ field: 'Name', from: tag.name, to: updated.name }] : []),
-          ...(updated.color !== tag.color ? [{ field: 'Color', from: tag.color, to: updated.color }] : []),
-        ],
+    if (updated.color !== tag.color) {
+      logActivity(request.user, 'tag_updated', `${request.user.display_name} changed the color of the tag "${tag.name}"`, {
+        changes: [{ field: 'Color', from: tag.color, to: updated.color }],
       });
     }
     return updated;

@@ -767,6 +767,9 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 
 
 
+/* Admin, Tags: editing one tag's color */
+.tag-color-edit { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); }
+
 /* v0.10.0: entry card icons, late label, pinned notes, since-last-sign-in banner */
 .entry-actions { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
 .card-icon {
