@@ -8,6 +8,7 @@ import { isValidDateString, isFutureEntryDate } from '../utils/date.js';
 import { htmlToText, logActivity, usDate, APP_VERSION } from '../activity.js';
 import { attachTags, entrySnapshot, tagNamesFor } from './entries.js';
 import { CSP } from '../csp.js';
+import { indexEntry, removeFromIndex } from '../searchIndex.js';
 
 
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
@@ -424,6 +425,7 @@ export default async function apiV1Routes(fastify) {
         setEntryTags(result.lastInsertRowid, resolved.ids);
         return Number(result.lastInsertRowid);
       })();
+      indexEntry(id);
 
       logActivity(actorFor(request.apiKey), 'entry_created', `${request.apiKey.name} added an entry for ${usDate(entry_date)}`, {
         entry_id: id,
@@ -470,6 +472,7 @@ export default async function apiV1Routes(fastify) {
         db.prepare("UPDATE entries SET body = ?, updated_at = datetime('now') WHERE id = ?").run(built.clean, entry.id);
         if (resolved) setEntryTags(entry.id, resolved.ids);
       })();
+      indexEntry(entry.id);
       const afterTags = tagNamesFor(entry.id);
       if (built.clean !== entry.body || beforeTags.join() !== afterTags.join()) {
         db.prepare("UPDATE entries SET edited_at = datetime('now') WHERE id = ?").run(entry.id);
@@ -511,6 +514,7 @@ export default async function apiV1Routes(fastify) {
       }
       const beforeTags = tagNamesFor(entry.id);
       db.prepare('DELETE FROM entries WHERE id = ?').run(entry.id);
+      removeFromIndex(entry.id);
       logActivity(actorFor(request.apiKey), 'entry_deleted', `${request.apiKey.name} deleted an entry for ${usDate(entry.entry_date)}`, {
         entry_id: entry.id,
         entry_date: entry.entry_date,
