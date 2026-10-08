@@ -426,6 +426,124 @@ function ApiKeyManager() {
   );
 }
 
+const MAX_IMPORT_BYTES = 50 * 1024 * 1024;
+
+// Export the whole log to a file, and add a file's entries back. Import only
+// ever adds: nothing already here is changed or deleted.
+function DataManager() {
+  const [step, setStep] = useState('pick'); // 'pick' | 'preview' | 'done'
+  const [fileData, setFileData] = useState(null);
+  const [fileName, setFileName] = useState('');
+  const [summary, setSummary] = useState(null);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const reset = () => {
+    setStep('pick');
+    setFileData(null);
+    setFileName('');
+    setSummary(null);
+    setResult(null);
+    setError('');
+  };
+
+  const choose = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    setError('');
+    if (file.size > MAX_IMPORT_BYTES) {
+      setError('That file is larger than 50 MB.');
+      return;
+    }
+    setBusy(true);
+    try {
+      let data;
+      try {
+        data = JSON.parse(await file.text());
+      } catch {
+        throw new Error('That file is not a QuarterDeckLog export (it is not valid JSON).');
+      }
+      setSummary(await api.post('/api/admin/import/preview', data));
+      setFileData(data);
+      setFileName(file.name);
+      setStep('preview');
+    } catch (err) {
+      setError(err.message);
+    }
+    setBusy(false);
+  };
+
+  const confirm = async () => {
+    setError('');
+    setBusy(true);
+    try {
+      setResult(await api.post('/api/admin/import', fileData));
+      setFileData(null);
+      setStep('done');
+    } catch (err) {
+      setError(err.message);
+    }
+    setBusy(false);
+  };
+
+  const n = (v) => Number(v).toLocaleString('en-US');
+
+  return (
+    <div className="stack">
+      <div>
+        <h3 style={{ margin: '0 0 4px' }}>Export</h3>
+        <p className="muted" style={{ margin: '0 0 8px' }}>
+          Downloads every entry, tag and author name as one file. It holds no passwords, API keys or Activity log.
+        </p>
+        <a className="button-link" href="/api/admin/export" download>Download export</a>
+      </div>
+
+      <div>
+        <h3 style={{ margin: '12px 0 4px' }}>Import</h3>
+        <p className="muted" style={{ margin: '0 0 8px' }}>
+          Adds the entries and tags from an export file. Nothing already here is changed or deleted, and entries that are already here are skipped, so importing the same file twice adds nothing.
+          People in the file who are not here become locked accounts that can't sign in, so their entries keep their name.
+        </p>
+        {error && <p className="error-text">{error}</p>}
+        {step === 'pick' && (
+          <label className="button-link file-pick">
+            {busy ? 'Reading…' : 'Choose export file…'}
+            <input type="file" accept=".json,application/json" onChange={choose} disabled={busy} hidden />
+          </label>
+        )}
+        {step === 'preview' && summary && (
+          <div className="stack">
+            <p style={{ margin: 0 }}>
+              <strong>{fileName}</strong>: {n(summary.total)} {summary.total === 1 ? 'entry' : 'entries'} in the file.
+              {' '}{n(summary.entries)} will be added, {n(summary.alreadyThere)} are already here.
+              {summary.tags > 0 && ` ${n(summary.tags)} new ${summary.tags === 1 ? 'tag' : 'tags'}.`}
+              {summary.people > 0 && ` ${n(summary.people)} ${summary.people === 1 ? 'person' : 'people'} will be added as locked accounts.`}
+            </p>
+            <div className="modal-actions" style={{ justifyContent: 'flex-start' }}>
+              <button type="button" onClick={confirm} disabled={busy || summary.entries + summary.tags + summary.people === 0}>
+                {busy ? 'Importing…' : 'Import'}
+              </button>
+              <button type="button" className="secondary" onClick={reset} disabled={busy}>Cancel</button>
+            </div>
+          </div>
+        )}
+        {step === 'done' && result && (
+          <div className="stack">
+            <p style={{ margin: 0 }}>
+              Imported {n(result.entries)} {result.entries === 1 ? 'entry' : 'entries'}; {n(result.alreadyThere)} were already here.
+              {result.tags > 0 && ` ${n(result.tags)} new ${result.tags === 1 ? 'tag' : 'tags'}.`}
+              {result.people > 0 && ` ${n(result.people)} ${result.people === 1 ? 'person' : 'people'} added as locked accounts.`}
+            </p>
+            <div><button type="button" className="secondary" onClick={reset}>Done</button></div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminSettings({ currentUser, onSelfChanged }) {
   const [tab, setTab] = useState('tags');
 
@@ -436,11 +554,13 @@ export default function AdminSettings({ currentUser, onSelfChanged }) {
         <button className={tab === 'invites' ? 'active' : 'secondary'} onClick={() => setTab('invites')}>Invites</button>
         <button className={tab === 'users' ? 'active' : 'secondary'} onClick={() => setTab('users')}>Team</button>
         <button className={tab === 'api' ? 'active' : 'secondary'} onClick={() => setTab('api')}>API keys</button>
+        <button className={tab === 'data' ? 'active' : 'secondary'} onClick={() => setTab('data')}>Data</button>
       </div>
       {tab === 'tags' && <TagManager />}
       {tab === 'invites' && <InviteManager />}
       {tab === 'users' && <UserRoster currentUser={currentUser} onSelfChanged={onSelfChanged} />}
       {tab === 'api' && <ApiKeyManager />}
+      {tab === 'data' && <DataManager />}
     </div>
   );
 }
