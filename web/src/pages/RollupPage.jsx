@@ -11,7 +11,7 @@ import { formatUs, todayStr } from '../lib/dates.js';
 
 // Every entry in a date range, newest day first, ready to print to PDF (the
 // browser's print dialog) or export to CSV. The screen shows one page at a
-// time; Print and Export CSV cover the whole range and the filters in use.
+// time; Print and Export cover the whole range and the filters in use.
 // Print builds a plain page in a hidden frame (see lib/rollupPrint.js) and
 // stops at PRINT_LIMIT entries. Read only: edit entries from the List or
 // Calendar. The filters and the results layout are shared with Search.
@@ -54,7 +54,7 @@ export default function RollupPage() {
   };
 
   const tagsText = tagIds.length ? `Tag: ${allTags.filter((t) => tagIds.includes(t.id)).map((t) => t.name).join(', ')}` : '';
-  const personText = authorId !== '' ? `Person: ${(authors.find((a) => String(a.id) === authorId) || {}).name || ''}` : '';
+  const personText = authorId !== '' ? `User: ${(authors.find((a) => String(a.id) === authorId) || {}).name || ''}` : '';
   const filterText = [tagsText, personText].filter(Boolean).join(' / ');
   const filtered = filterText !== '';
   const activeCount = (range ? 1 : 0) + (tagIds.length ? 1 : 0) + (authorId !== '' ? 1 : 0);
@@ -64,13 +64,13 @@ export default function RollupPage() {
 
   const actions = (
     <>
-      <button type="button" className="secondary" disabled={!count || count > PRINT_LIMIT} onClick={() => printRollup(entries, from, to, filterText)}>Print / PDF</button>
-      <button type="button" className="secondary" disabled={!count} onClick={() => downloadRollupCsv(entries, from, to, filtered)}>Export CSV</button>
+      <button type="button" className="secondary" disabled={!count || count > PRINT_LIMIT} onClick={() => printRollup(entries, from, to, filterText)} title="Print, or save as a PDF from the print window">Print</button>
+      <button type="button" className="secondary" disabled={!count} onClick={() => downloadRollupCsv(entries, from, to, filtered)} title="Download as a spreadsheet (CSV)">Export</button>
     </>
   );
   const notice = count > PRINT_LIMIT ? (
     <p className="muted results-note no-print">
-      Print / PDF handles up to {PRINT_LIMIT.toLocaleString('en-US')} entries. Pick a shorter range to print, or use Export CSV for all {count.toLocaleString('en-US')}.
+      Print handles up to {PRINT_LIMIT.toLocaleString('en-US')} entries. Pick a shorter range to print, or use Export for all {count.toLocaleString('en-US')}.
     </p>
   ) : null;
 
@@ -92,7 +92,7 @@ export default function RollupPage() {
             <TagPicker tags={allTags} selected={tagIds} onToggle={toggleTag} />
           </FilterRow>
           {authors.length > 1 && (
-            <FilterRow label="Person">
+            <FilterRow label="User">
               <PersonSelect authors={authors} value={authorId} onChange={setAuthorId} />
             </FilterRow>
           )}
@@ -103,7 +103,6 @@ export default function RollupPage() {
       {!data && !error && <p className="muted">Loading…</p>}
       {data && (
         <ResultsList
-          eyebrow="Rollup"
           title={`${formatUs(from)} to ${formatUs(to)}`}
           summary={filterText}
           actions={actions}

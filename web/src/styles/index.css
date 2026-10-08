@@ -550,7 +550,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .list-none { padding: 16px; margin: 0; font-size: 14px; }
 
 /* ---- Rollup ---- */
-/* Ctrl+P on the page prints just the entries shown; Print / PDF prints the whole range. */
+/* Ctrl+P on the page prints just the entries shown; Print prints the whole range. */
 @media print {
   .topbar, .app-footer, .no-print { display: none !important; }
   .app-shell { padding: 0; }
@@ -846,7 +846,11 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .filter-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
 .filter-field select { width: auto; max-width: 100%; }
 .filter-dates { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
-.filter-dates .dp-trigger-row { min-width: 250px; }
+.filter-dates .dp-trigger-row { gap: 6px; }
+/* The date button is the same size as the Year / Q1-Q4 buttons next to it. */
+.filter-dates .dp-trigger { flex: 0 0 auto; padding: 6px 12px; font-size: 13px; gap: 6px; }
+.filter-dates .dp-trigger svg { width: 14px; height: 14px; }
+.filter-dates .dp-reset { padding: 6px 12px; font-size: 13px; }
 .filter-dates .quick-ranges { margin-top: 0; gap: 6px; }
 .filter-dates .quick-ranges button { flex: 0 0 auto; min-width: 46px; padding: 6px 10px; }
 
@@ -878,10 +882,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   border-top: 4px double var(--color-primary);
 }
 .results-id { min-width: 0; flex: 1 1 320px; }
-.results-eyebrow { margin: 0 0 2px; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-primary-dark); }
 .results-title { margin: 0; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; overflow-wrap: anywhere; }
 .results-meta { margin: 6px 0 0; font-size: 14px; color: var(--color-text-muted); }
-.results-meta .figure { font-size: 14px; font-variant-numeric: tabular-nums; color: var(--color-text); }
 .results-note { margin: 6px 0 0; }
 .results-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .results-empty { margin: 12px 2px; }
