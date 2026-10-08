@@ -42,7 +42,7 @@ export function FilterRow({ label, children }) {
   );
 }
 
-// Two short fields (Person and Sort) side by side on a wide screen, stacked on a phone.
+// Two short fields (User and Sort) side by side on a wide screen, stacked on a phone.
 export function FilterPair({ children }) {
   return <div className="filter-pair">{children}</div>;
 }
@@ -57,8 +57,8 @@ export function TagPicker({ tags, selected, onToggle }) {
 
 export function PersonSelect({ authors, value, onChange }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} aria-label="Person">
-      <option value="">Everyone</option>
+    <select value={value} onChange={(e) => onChange(e.target.value)} aria-label="User">
+      <option value="">All Users</option>
       {authors.map((a) => (
         <option key={a.id} value={a.id}>{a.name}{a.deleted ? ' (deleted user)' : ''}</option>
       ))}

@@ -11,10 +11,10 @@ import { PRINT_LIMIT, printEntries } from '../lib/rollupPrint.js';
 import { isDateStr, formatUs } from '../lib/dates.js';
 
 // Search the whole log. Everything that defines a search (the words, dates,
-// tags, person and sort) lives in the web address, so Back, refresh and a copied
+// tags, user and sort) lives in the web address, so Back, refresh and a copied
 // link all return to the same results. A search runs when the person presses
 // Enter or clicks Search; changing a filter afterwards runs the same words again.
-// The results layout, Print / PDF and Export CSV are shared with Rollup.
+// The results layout, Print and Export are shared with Rollup.
 
 const ID_LIST = /^\d{1,9}(,\d{1,9})*$/;
 const INDEXING_POLL_MS = 3000;
@@ -129,7 +129,7 @@ export default function SearchPage() {
 
   const datesText = range ? `${formatUs(range.from)} to ${formatUs(range.to)}` : '';
   const tagsText = tagIds.length ? `Tag: ${allTags.filter((t) => tagIds.includes(t.id)).map((t) => t.name).join(', ')}` : '';
-  const personText = authorId ? `Person: ${(authors.find((a) => String(a.id) === authorId) || {}).name || ''}` : '';
+  const personText = authorId ? `User: ${(authors.find((a) => String(a.id) === authorId) || {}).name || ''}` : '';
   const filterText = [datesText, tagsText, personText].filter(Boolean).join(' / ');
 
   const entries = data ? data.entries : [];
@@ -139,8 +139,8 @@ export default function SearchPage() {
 
   const actions = (
     <>
-      <button type="button" className="secondary" disabled={!count || count > PRINT_LIMIT} onClick={() => printEntries(entries, printTitle, filterText)}>Print / PDF</button>
-      <button type="button" className="secondary" disabled={!count} onClick={() => downloadEntriesCsv(entries, fileName)}>Export CSV</button>
+      <button type="button" className="secondary" disabled={!count || count > PRINT_LIMIT} onClick={() => printEntries(entries, printTitle, filterText)} title="Print, or save as a PDF from the print window">Print</button>
+      <button type="button" className="secondary" disabled={!count} onClick={() => downloadEntriesCsv(entries, fileName)} title="Download as a spreadsheet (CSV)">Export</button>
     </>
   );
   const notice = (
@@ -152,7 +152,7 @@ export default function SearchPage() {
       )}
       {count > PRINT_LIMIT && (
         <p className="muted results-note no-print">
-          Print / PDF handles up to {PRINT_LIMIT.toLocaleString('en-US')} entries. Narrow the search to print, or use Export CSV for all {count.toLocaleString('en-US')}.
+          Print handles up to {PRINT_LIMIT.toLocaleString('en-US')} entries. Narrow the search to print, or use Export for all {count.toLocaleString('en-US')}.
         </p>
       )}
     </>
@@ -201,7 +201,7 @@ export default function SearchPage() {
           </FilterRow>
           <FilterPair>
             {authors.length > 1 && (
-              <FilterRow label="Person">
+              <FilterRow label="User">
                 <PersonSelect authors={authors} value={authorId} onChange={(v) => update({ author: v })} />
               </FilterRow>
             )}
@@ -223,7 +223,6 @@ export default function SearchPage() {
       )}
       {data && q.length >= 2 && (
         <ResultsList
-          eyebrow="Search"
           title={`“${q}”`}
           summary={filterText}
           actions={actions}

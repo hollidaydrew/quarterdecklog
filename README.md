@@ -21,8 +21,8 @@ Click a day on the calendar, see everything that was logged. Write entries in a 
 - List view: a scrolling list of dates with the selected day's entries beside it, a single-day or date-range filter, an "Entries" check box that hides empty days, and one-click Year / Q1 to Q4 buttons
 - Calendar view: click a day, see that day's entries, newest first
 - Search: its own page with filters for dates, tags and person. Words match from the start of a word, "quotes" for exact phrases, -word to leave one out, matched words highlighted, and results can be printed or exported like the Rollup
-- Rollup: every entry in a date range on one page, with Print / PDF and Export CSV
-- Rollup and Search share one Filters panel and results layout (tag, person and date filters; print and CSV follow the filters)
+- Rollup: every entry in a date range on one page, with Print and Export
+- Rollup and Search share one Filters panel and results layout (tag, user and date filters; print and export follow the filters)
 
 **Running it**
 - Invite-link onboarding; there is no public signup
