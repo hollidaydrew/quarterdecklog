@@ -383,7 +383,7 @@ function ApiKeyManager() {
   const [info, setInfo] = useState(null); // { enabled, keys } | null while loading
   const [name, setName] = useState('');
   const [scope, setScope] = useState('read');
-  const [expires, setExpires] = useState('');
+  const [expires, setExpires] = useState('90'); // every key expires; 90 days unless changed
   const [created, setCreated] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -399,7 +399,7 @@ function ApiKeyManager() {
       const key = await api.post('/api/admin/api-keys', {
         name,
         scope,
-        expires_in_days: expires ? Number(expires) : null,
+        expires_in_days: Number(expires),
       });
       setCreated(key);
       setName('');
@@ -452,9 +452,10 @@ function ApiKeyManager() {
               <option value="write">Read and write</option>
             </select>
             <select value={expires} onChange={(e) => setExpires(e.target.value)} aria-label="Expires" style={{ width: 'auto' }}>
-              <option value="">Never expires</option>
               <option value="30">Expires in 30 days</option>
+              <option value="60">Expires in 60 days</option>
               <option value="90">Expires in 90 days</option>
+              <option value="180">Expires in 180 days</option>
               <option value="365">Expires in 1 year</option>
             </select>
             <button type="submit" disabled={busy}>Create key</button>
@@ -470,7 +471,7 @@ function ApiKeyManager() {
               {k.name}{' '}
               <span className="muted">
                 {k.scope === 'write' ? 'read and write' : 'read only'} · {k.key_prefix}…
-                {k.expired ? ' · expired' : k.expires_at ? ` · expires ${formatUsFromDate(new Date(k.expires_at))}` : ''}
+                {k.expired ? ' · expired' : k.expires_at ? ` · expires ${formatUsFromDate(new Date(k.expires_at))}` : ' · never expires'}
               </span>
             </span>
             <span className="muted last-login">

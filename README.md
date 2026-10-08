@@ -100,7 +100,7 @@ All configuration is via environment variables (see `.env.example`):
 The API lets scripts and other systems add and read entries and tags. It is **off by default**.
 
 1. Set `API_ENABLED=true` in `.env` and restart the container.
-2. Sign in as an admin, open **Admin → API keys**, and create a key. Give it a friendly name (for example "Nagios"); that name is what the Activity log shows. Choose read only or read and write, and optionally an expiry. The key is shown once.
+2. Sign in as an admin, open **Admin → API keys**, and create a key. Give it a friendly name (for example "Nagios"); that name is what the Activity log shows. Choose read only or read and write, and when it expires (30, 60, 90 or 180 days, or 1 year). The key is shown once.
 3. Call `/api/v1` with `Authorization: Bearer <key>`. Admins can open **API Docs** from the menu for the full, try-it-out reference.
 
 ```
@@ -135,7 +135,7 @@ This repo is public, so a few things are worth knowing if you're running your ow
 - Anyone can edit their own display name, username and password, but a request to change a role is refused for everyone except through an admin editing someone else. Entries can only be edited or deleted by their author or an admin (enforced on the server).
 - Two-step sign-in is off until an admin turns it on for the team. Authenticator secrets are encrypted at rest (AES-256-GCM) with a key that is separate from the session secret; recovery codes and trusted-device cookies are stored only as hashes. A password alone opens nothing while a code is still needed, wrong codes lock the account for 15 minutes, and a code can't be used twice. A device that passes a code is trusted for a fixed 7 days (up to 5 devices per person).
 - Importing a log file is add-only, validated strictly and cleaned again, and runs as one transaction. Exports contain no passwords, keys or Activity log.
-- API keys are 256-bit random values; only a SHA-256 hash is stored. A key works on `/api/v1` only, can be revoked or set to expire, and is rate-limited. The API is off unless `API_ENABLED=true`.
+- API keys are 256-bit random values; only a SHA-256 hash is stored. A key works on `/api/v1` only, always expires (30 days to 1 year), can be revoked at any time, and is rate-limited. The API is off unless `API_ENABLED=true`.
 - The activity log is admin-only. It keeps entry text (including text of deleted entries) for up to 5,000 events.
 
 If you find a security issue, please open a private security advisory on GitHub rather than a public issue.
