@@ -19,6 +19,8 @@ The QuarterDeckLog wordmark was designed by ChatGPT (OpenAI) and edited by Claud
 - [@fastify/cookie](https://github.com/fastify/fastify-cookie) | MIT | Cookies
 - [@fastify/session](https://github.com/fastify/session) | MIT | Sign-in sessions
 - [@fastify/rate-limit](https://github.com/fastify/fastify-rate-limit) | MIT | Limits repeated sign-in attempts
+- [@fastify/swagger](https://github.com/fastify/fastify-swagger) | MIT | Builds the API description (OpenAPI) from the API routes
+- [@fastify/swagger-ui](https://github.com/fastify/fastify-swagger-ui) | MIT | Serves the API Docs page (includes [Swagger UI](https://github.com/swagger-api/swagger-ui), Apache-2.0)
 - [@fastify/static](https://github.com/fastify/fastify-static) | MIT | Serves the web app
 - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) | MIT | SQLite database driver (SQLite itself is public domain)
 - [argon2](https://github.com/ranisalt/node-argon2) | MIT | Password hashing

@@ -103,3 +103,45 @@ db.exec(`
     value TEXT NOT NULL
   );
 `);
+
+// --- v0.8.0: API access ---
+// Additive only. Existing users, entries and tags are never rewritten.
+//  * users.is_system marks the built-in "System" account that owns every entry
+//    written through the API. It has no usable password and can never sign in.
+//  * api_keys holds the keys admins create. Only a SHA-256 hash of each key is
+//    stored, never the key itself, so a copy of the database can't be used to
+//    call the API.
+addColumnIfMissing('users', 'is_system', 'INTEGER NOT NULL DEFAULT 0');
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS api_keys (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    key_prefix TEXT NOT NULL,
+    key_hash TEXT UNIQUE NOT NULL,
+    scope TEXT NOT NULL CHECK (scope IN ('read', 'write')),
+    created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_by_name TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    expires_at TEXT,
+    last_used_at TEXT,
+    revoked_at TEXT
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_api_keys_name ON api_keys(name COLLATE NOCASE) WHERE revoked_at IS NULL;
+`);
+
+// Creates the System user once. If a real user already holds the username
+// "system", a different username is used so nobody's account is touched.
+export const SYSTEM_USER_ID = db.transaction(() => {
+  const existing = db.prepare('SELECT id FROM users WHERE is_system = 1').get();
+  if (existing) return existing.id;
+  let username = 'system';
+  for (let n = 2; db.prepare('SELECT 1 FROM users WHERE username = ?').get(username); n++) {
+    username = `system-${n}`;
+  }
+  return Number(
+    db
+      .prepare("INSERT INTO users (username, display_name, password_hash, is_admin, is_system) VALUES (?, 'System', '!', 0, 1)")
+      .run(username).lastInsertRowid
+  );
+})();

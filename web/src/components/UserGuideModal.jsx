@@ -23,7 +23,7 @@ export default function UserGuideModal({ user, onClose }) {
         <ul>
           <li>Sign in with the username and password you chose when you joined.</li>
           <li>Click the QuarterDeckLog logo at any time to return to the view you used last (List or Calendar).</li>
-          <li>The menu button at the top right holds Search, My profile, this User Guide and Log out. Admins also see Activity log and Admin.</li>
+          <li>The menu button at the top right holds Search, My profile, this User Guide and Log out. Admins also see Activity log, Admin and, when the API is on, API Docs.</li>
           <li>Times are shown in your local time. Each entry shows who wrote it and the date and time it was written.</li>
         </ul>
       </Section>
@@ -78,7 +78,8 @@ export default function UserGuideModal({ user, onClose }) {
             <li><strong>Tags:</strong> Admin, then Tags. Add a tag with a name and color, or delete one. Deleting a tag removes it from the entries that used it.</li>
             <li><strong>Invites:</strong> Admin, then Invites, then Generate invite link. Send the link to the new person. Each link works once and expires after 7 days. You can copy or revoke a pending link.</li>
             <li><strong>Team:</strong> Admin, then Team. Edit changes a name, username or role. Reset password creates a temporary password to share privately. Delete removes someone's access but keeps their entries. The last time each person signed in is shown under their name.</li>
-            <li><strong>Activity log:</strong> open the menu and choose Activity log. It lists the last 5,000 events: entries added, edited and deleted, invites, sign-ups, sign-ins, tag and profile changes, and version updates. Choose Show changes to see an entry's text and what was changed. Choose Export CSV to download every event, with its entry text and changes, as a spreadsheet file.</li>
+            <li><strong>Activity log:</strong> open the menu and choose Activity log. It lists the last 5,000 events: entries added, edited and deleted, invites, sign-ups, sign-ins, tag and profile changes, version updates, and API key changes. Choose Show changes to see an entry's text and what was changed. Choose Export CSV to download every event, with its entry text and changes, as a spreadsheet file.</li>
+            <li><strong>API keys:</strong> Admin, then API keys. Keys let scripts and other systems add and read entries and tags. Type a friendly name (such as Nagios), pick read only or read and write and an expiry, then Create key. The key is shown once, so copy it then. The Activity log shows the key's name as who did something, and entries made through the API are written by System. Revoke stops a key at once. This tab says if the API is turned off; the person running the server turns it on with API_ENABLED=true. API Docs, in the menu, describes every call.</li>
           </ul>
         </Section>
       )}

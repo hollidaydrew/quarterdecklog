@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-export default function MenuDrawer({ user, onClose, onLogout, onOpenProfile, onOpenGuide, onOpenActivity, onOpenSearch }) {
+export default function MenuDrawer({ user, apiEnabled, onClose, onLogout, onOpenProfile, onOpenGuide, onOpenActivity, onOpenSearch }) {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose();
@@ -31,6 +31,9 @@ export default function MenuDrawer({ user, onClose, onLogout, onOpenProfile, onO
           )}
           {user.is_admin && (
             <Link to="/admin" onClick={onClose}>Admin</Link>
+          )}
+          {user.is_admin && apiEnabled && (
+            <a href="/api/docs/" target="_blank" rel="noopener" onClick={onClose}>API Docs</a>
           )}
           <button type="button" className="drawer-link" onClick={onLogout}>Log out</button>
         </nav>
