@@ -1,7 +1,7 @@
 import { formatDateTimeShort, formatUs, isLateEntry, weekdayName } from './dates.js';
 import { downloadCsv } from './activityCsv.js';
 
-const HEADERS = ['Date', 'Day', 'Person', 'Created', 'Edited', 'Late entry', 'Tags', 'Entry'];
+const HEADERS = ['Date', 'Day', 'User', 'Created', 'Edited', 'Late entry', 'Tags', 'Entry'];
 
 // The readable text of an entry's HTML body, one line per block.
 export function bodyToText(html) {

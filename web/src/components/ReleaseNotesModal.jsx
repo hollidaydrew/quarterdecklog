@@ -2,16 +2,19 @@ import { useState } from 'react';
 import Modal from './Modal.jsx';
 import { CREDITS, RELEASES } from '../lib/releases.js';
 import { formatUs } from '../lib/dates.js';
+import { releasesFor } from '../lib/releaseNotes.js';
 
 function ReleaseList() {
+  const releases = releasesFor(RELEASES);
   return (
     <>
-      {RELEASES.length === 0 && <p className="muted">No release notes yet.</p>}
-      {RELEASES.map((release) => (
+      {releases.length === 0 && <p className="muted">No release notes yet.</p>}
+      {releases.map((release) => (
         <section key={release.version} className="release">
           <h3>
             v{release.version} <span className="muted">{formatUs(release.date)}</span>
           </h3>
+          {release.sections.length === 0 && <p className="muted">Behind-the-scenes updates.</p>}
           {release.sections.map((section) => (
             <div key={section.title}>
               <h4>{section.title}</h4>
