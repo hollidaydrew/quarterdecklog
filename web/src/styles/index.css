@@ -358,8 +358,14 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
 
 .admin-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 20px;
+}
+/* On a phone the six tabs wrap onto a second line instead of running off the card. */
+@media (max-width: 700px) {
+  .admin-tabs { gap: 6px; }
+  .admin-tabs button { padding: 8px 12px; }
 }
 .admin-tabs button { background: transparent; color: var(--color-text-muted); }
 .admin-tabs button.active { background: var(--color-primary); color: white; }
@@ -767,6 +773,9 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 
 
 
+/* Admin, Tags: editing one tag's color */
+.tag-color-edit { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); }
+
 /* v0.10.0: entry card icons, late label, pinned notes, since-last-sign-in banner */
 .entry-actions { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
 .card-icon {
@@ -796,6 +805,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .since-banner, .pinned-notes { flex-shrink: 0; }
 .pinned-notes { max-height: 40vh; overflow-y: auto; }
 .pinned-note.card { padding: 10px 14px; }
+/* A tinted pinned note keeps its Haze Gray left edge, so it still reads as pinned. */
+.card.pinned-note.entry-incident { border-left-color: var(--color-primary); }
 .pinned-note .entry-body { font-size: 14px; }
 .button-link {
   display: inline-block; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--color-border);
@@ -830,7 +841,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .filter-on { color: var(--color-primary-dark); letter-spacing: 0.06em; }
 .filter-head-actions { display: flex; align-items: center; gap: 8px; }
 .filter-clear, .filter-toggle { padding: 3px 12px; font-size: 13px; }
-.filter-toggle { display: none; }
 .filter-row {
   display: grid;
   grid-template-columns: 78px minmax(0, 1fr);
@@ -840,6 +850,9 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   border-top: 1px solid var(--color-border);
 }
 .filter-head + .filter-body .filter-row:first-child { margin-top: 6px; }
+/* Folded away: just the header with its count and buttons. */
+.filter-panel:not(.is-open) .filter-body { display: none; }
+.filter-panel:not(.is-open) { padding-bottom: 12px; }
 .filter-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 24px; border-top: 1px solid var(--color-border); }
 .filter-pair .filter-row { border-top: none; }
 .filter-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-faint); }
@@ -921,9 +934,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 
 /* -- Phones: the filters fold away behind a button that says how many are on. -- */
 @media (max-width: 700px) {
-  .filter-toggle { display: inline-block; }
-  .filter-body { display: none; }
-  .filter-panel.is-open .filter-body { display: block; }
   .filter-row { grid-template-columns: 1fr; padding: 10px 0; }
   .filter-dates .dp-trigger-row { min-width: 0; width: 100%; }
   .filter-dates .dp, .filter-dates .dp-trigger { width: 100%; }

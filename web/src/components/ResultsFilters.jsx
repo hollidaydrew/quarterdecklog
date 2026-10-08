@@ -2,11 +2,36 @@ import { useState } from 'react';
 import TagChip from './TagChip.jsx';
 
 // The boxed "Filters" area shared by Rollup and Search, so the two pages look
-// and behave the same. On a phone it folds away behind a button that says how
-// many filters are on. activeCount is the number of filters currently applied;
-// onClear shows a "Clear filters" button when there is something to clear.
+// and behave the same. A Hide / Show button folds it away on any screen; the
+// header still says how many filters are on. It starts open on a computer and
+// closed on a phone, and remembers the choice in this browser.
+// activeCount is the number of filters currently applied; onClear shows a
+// "Clear filters" button when there is something to clear.
+const OPEN_KEY = 'qdl-filters-open';
+
+function startsOpen() {
+  try {
+    const saved = localStorage.getItem(OPEN_KEY);
+    if (saved === '1') return true;
+    if (saved === '0') return false;
+  } catch {
+    // private mode: fall through to the default
+  }
+  return !window.matchMedia('(max-width: 700px)').matches;
+}
+
 export function FilterPanel({ activeCount = 0, onClear, children }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(startsOpen);
+  const toggle = () => {
+    setOpen((v) => {
+      try {
+        localStorage.setItem(OPEN_KEY, v ? '0' : '1');
+      } catch {
+        // not remembered; it still works for this visit
+      }
+      return !v;
+    });
+  };
   return (
     <section className={`filter-panel${open ? ' is-open' : ''}`} aria-labelledby="filter-panel-title">
       <div className="filter-head">
@@ -20,9 +45,9 @@ export function FilterPanel({ activeCount = 0, onClear, children }) {
             className="secondary filter-toggle"
             aria-expanded={open}
             aria-controls="filter-panel-body"
-            onClick={() => setOpen((v) => !v)}
+            onClick={toggle}
           >
-            {open ? 'Hide' : 'Show'}
+            {open ? 'Hide filters' : 'Show filters'}
           </button>
         </div>
       </div>

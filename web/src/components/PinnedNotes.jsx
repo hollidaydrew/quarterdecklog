@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import TagChip from './TagChip.jsx';
 import { formatUs } from '../lib/dates.js';
+import { entryTintClass } from '../lib/easterEggTags.js';
 
 const COLLAPSED = 2;
 
@@ -49,7 +50,8 @@ export default function PinnedNotes() {
       </div>
       {error && <p className="error-text">{error}</p>}
       {shown.map((note) => (
-        <div key={note.id} className="card pinned-note">
+        // The same tint the entry has in the log (for example the light orange for an Incident).
+        <div key={note.id} className={`card pinned-note${entryTintClass(note) ? ` ${entryTintClass(note)}` : ''}`}>
           <div className="pinned-note-meta">
             <span>
               <strong>{note.author_name}</strong> · for{' '}
