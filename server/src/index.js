@@ -17,6 +17,7 @@ import activityRoutes from './routes/activity.js';
 import { recordVersionOnStart } from './activity.js';
 import { CSP } from './csp.js';
 import apiKeyRoutes from './routes/apiKeys.js';
+import dataTransferRoutes from './routes/dataTransfer.js';
 import apiV1Routes from './routes/apiV1.js';
 import { API_ENABLED } from './config.js';
 
@@ -78,6 +79,7 @@ await fastify.register(meRoutes);
 recordVersionOnStart();
 await fastify.register(activityRoutes);
 await fastify.register(apiKeyRoutes);
+await fastify.register(dataTransferRoutes);
 if (API_ENABLED) await fastify.register(apiV1Routes);
 
 // Serves the built React app. In the Docker image this is populated by the
