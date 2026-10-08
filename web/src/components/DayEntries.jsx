@@ -75,6 +75,7 @@ export default function DayEntries({ date, user, backLink, onChanged }) {
         await api.put(`/api/entries/${modalMode.id}`, { body, tag_ids });
       }
       setModalMode(null);
+      window.dispatchEvent(new Event('qdl-pins-changed'));
       await load();
       if (onChanged) onChanged();
     } catch (err) {
@@ -84,9 +85,23 @@ export default function DayEntries({ date, user, backLink, onChanged }) {
     }
   };
 
+  // Pin or unpin an entry. The Pinned section at the top of the page listens for
+  // the event and reloads itself.
+  const handlePin = async (entry, pinned) => {
+    setError('');
+    try {
+      await api.put(`/api/entries/${entry.id}/pin`, { pinned });
+      window.dispatchEvent(new Event('qdl-pins-changed'));
+      await load();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const handleDelete = async (entry) => {
     if (!confirm('Delete this entry? This cannot be undone.')) return;
     await api.del(`/api/entries/${entry.id}`);
+    window.dispatchEvent(new Event('qdl-pins-changed'));
     await load();
     if (onChanged) onChanged();
   };
@@ -145,6 +160,7 @@ export default function DayEntries({ date, user, backLink, onChanged }) {
             canEdit={entry.author_id === user.id || user.is_admin}
             onEdit={() => setModalMode(entry)}
             onDelete={() => handleDelete(entry)}
+            onPin={handlePin}
           />
         ))}
       </div>

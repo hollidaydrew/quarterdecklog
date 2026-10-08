@@ -10,6 +10,7 @@ The QuarterDeckLog wordmark was designed by ChatGPT (OpenAI) and edited by Claud
 ## Runs in your browser
 - [React](https://react.dev) | MIT | User interface library
 - [React DOM (react-dom)](https://react.dev) | MIT | Draws the interface in the browser
+- [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) | MIT | Draws the QR code for setting up two-step sign-in, in your browser
 - [React Router (react-router-dom)](https://github.com/remix-run/react-router) | MIT | Page navigation
 - [Trix](https://trix-editor.org/) | MIT | Rich-text entry editor by Basecamp (37signals)
 - [DOMPurify](https://github.com/cure53/DOMPurify) | Apache-2.0 | HTML sanitizer used inside Trix (offered as MPL-2.0 or Apache-2.0)

@@ -8,7 +8,7 @@ do not edit it by hand.
 
 SQLite, which is compiled into better-sqlite3, is in the public domain (https://sqlite.org/copyright.html).
 
-123 packages. Server: 113. Browser code: 12.
+124 packages. Server: 113. Browser code: 13.
 
 ## License choices
 
@@ -2686,6 +2686,33 @@ SOFTWARE.
 ================================================================================
 ## 78. Packages under this license text
 
+- qrcode-generator@2.0.4 (MIT) - https://github.com/kazuhikoarase/qrcode-generator.git
+
+MIT License
+
+Copyright (c) Kazuhiko Arase
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+## 79. Packages under this license text
+
 - quick-format-unescaped@4.0.4 (MIT) - https://github.com/davidmarkclements/quick-format.git
 
 The MIT License (MIT)
@@ -2711,7 +2738,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ================================================================================
-## 79. Packages under this license text
+## 80. Packages under this license text
 
 - react-dom@19.3.0 (MIT) - https://github.com/react/react.git
 - react@19.3.0 (MIT) - https://github.com/react/react.git
@@ -2740,7 +2767,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ================================================================================
-## 80. Packages under this license text
+## 81. Packages under this license text
 
 - react-router-dom@7.18.4 (MIT) - https://github.com/remix-run/react-router
 - react-router@7.18.4 (MIT) - https://github.com/remix-run/react-router
@@ -2770,7 +2797,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ================================================================================
-## 81. Packages under this license text
+## 82. Packages under this license text
 
 - real-require@0.2.0 (MIT) - https://github.com/pinojs/real-require.git
 - real-require@1.0.0 (MIT) - https://github.com/pinojs/real-require.git
@@ -2798,7 +2825,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ================================================================================
-## 82. Packages under this license text
+## 83. Packages under this license text
 
 - require-from-string@2.0.2 (MIT) - floatdrop/require-from-string
 
@@ -2825,7 +2852,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ================================================================================
-## 83. Packages under this license text
+## 84. Packages under this license text
 
 - ret@0.5.0 (MIT) - git://github.com/fent/ret.js.git
 
@@ -2852,7 +2879,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ================================================================================
-## 84. Packages under this license text
+## 85. Packages under this license text
 
 - reusify@1.1.0 (MIT) - https://github.com/mcollina/reusify.git
 
@@ -2879,7 +2906,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ================================================================================
-## 85. Packages under this license text
+## 86. Packages under this license text
 
 - rfdc@1.4.1 (MIT) - https://github.com/davidmarkclements/rfdc.git
 
@@ -2900,7 +2927,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 IN THE SOFTWARE.
 
 ================================================================================
-## 86. Packages under this license text
+## 87. Packages under this license text
 
 - safe-regex2@5.1.1 (MIT) - git://github.com/fastify/safe-regex2.git
 
@@ -2927,7 +2954,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ================================================================================
-## 87. Packages under this license text
+## 88. Packages under this license text
 
 - safe-stable-stringify@2.5.0 (MIT) - https://github.com/BridgeAR/safe-stable-stringify.git
 
@@ -2954,7 +2981,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ================================================================================
-## 88. Packages under this license text
+## 89. Packages under this license text
 
 - sanitize-html@2.18.0 (MIT) - https://github.com/apostrophecms/apostrophe.git
 
@@ -2967,7 +2994,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ================================================================================
-## 89. Packages under this license text
+## 90. Packages under this license text
 
 - secure-json-parse@4.1.0 (BSD-3-Clause) - https://github.com/fastify/secure-json-parse.git
 
@@ -2992,7 +3019,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ================================================================================
-## 90. Packages under this license text
+## 91. Packages under this license text
 
 - set-cookie-parser@2.7.2 (MIT) - nfriedly/set-cookie-parser
 
@@ -3019,7 +3046,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ================================================================================
-## 91. Packages under this license text
+## 92. Packages under this license text
 
 - setprototypeof@1.2.0 (ISC) - https://github.com/wesleytodd/setprototypeof.git
 
@@ -3038,7 +3065,7 @@ OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ================================================================================
-## 92. Packages under this license text
+## 93. Packages under this license text
 
 - shebang-command@2.0.0 (MIT) - kevva/shebang-command
 
@@ -3053,7 +3080,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ================================================================================
-## 93. Packages under this license text
+## 94. Packages under this license text
 
 - sonic-boom@4.2.1 (MIT) - https://github.com/pinojs/sonic-boom.git
 
@@ -3080,7 +3107,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ================================================================================
-## 94. Packages under this license text
+## 95. Packages under this license text
 
 - source-map-js@1.2.2 (BSD-3-Clause) - 7rulnik/source-map-js
 
@@ -3113,7 +3140,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ================================================================================
-## 95. Packages under this license text
+## 96. Packages under this license text
 
 - split2@4.2.0 (ISC) - https://github.com/mcollina/split2.git
 
@@ -3132,7 +3159,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ================================================================================
-## 96. Packages under this license text
+## 97. Packages under this license text
 
 - statuses@2.0.2 (MIT) - jshttp/statuses
 
@@ -3160,7 +3187,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ================================================================================
-## 97. Packages under this license text
+## 98. Packages under this license text
 
 - toad-cache@3.7.4 (MIT) - https://github.com/kibertoad/toad-cache.git
 
@@ -3187,7 +3214,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ================================================================================
-## 98. Packages under this license text
+## 99. Packages under this license text
 
 - toidentifier@1.0.1 (MIT) - component/toidentifier
 
@@ -3214,7 +3241,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ================================================================================
-## 99. Packages under this license text
+## 100. Packages under this license text
 
 - trix@2.1.19 (MIT) - https://github.com/basecamp/trix.git
 
@@ -3240,7 +3267,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ================================================================================
-## 100. Packages under this license text
+## 101. Packages under this license text
 
 - vite@8.3.2 (MIT) - https://github.com/vitejs/vite.git
 
@@ -5511,7 +5538,7 @@ Repository: https://github.com/sveltejs/zimmerframe
 > SOFTWARE.
 
 ================================================================================
-## 101. Packages under this license text
+## 102. Packages under this license text
 
 - yaml@2.9.1 (ISC) - github:eemeli/yaml
 

@@ -18,6 +18,9 @@ import ProfileModal from './components/ProfileModal.jsx';
 import UserGuideModal from './components/UserGuideModal.jsx';
 import ActivityLogModal from './components/ActivityLogModal.jsx';
 import SearchModal from './components/SearchModal.jsx';
+import PinnedNotes from './components/PinnedNotes.jsx';
+import SinceBanner from './components/SinceBanner.jsx';
+import DeviceNotice from './components/DeviceNotice.jsx';
 
 export default function App() {
   const [status, setStatus] = useState(null); // { setupRequired, user } | null while loading
@@ -93,6 +96,8 @@ export default function App() {
   } else {
     const user = status.user;
     const isList = location.pathname.startsWith('/list');
+    // Pinned notes sit above the day view, List and Calendar.
+    const showPinned = /^\/(list|calendar|day)(\/|$)/.test(location.pathname);
     content = (
       <div className={`app-shell${isList ? ' fill' : ''}`}>
         <header className="topbar">
@@ -131,6 +136,11 @@ export default function App() {
         {menuModal === 'search' && <SearchModal onClose={() => setMenuModal(null)} />}
         {menuModal === 'activity' && user.is_admin && <ActivityLogModal onClose={() => setMenuModal(null)} />}
         <div className={`main-content${isList ? ' wide fill' : ''}`}>
+          {status.mfa && status.mfa.showDeviceWarning && (
+            <DeviceNotice onOpenProfile={() => setMenuModal('profile')} onChanged={refreshStatus} />
+          )}
+          <SinceBanner previousLoginAt={status.previousLoginAt} />
+          {showPinned && <PinnedNotes />}
           <Routes>
             <Route path="/" element={<Navigate to={user.preferred_view === 'calendar' ? '/calendar' : '/list'} replace />} />
             <Route path="/list/:date?" element={<ListPage user={user} onViewUsed={rememberView} />} />
@@ -139,7 +149,7 @@ export default function App() {
             <Route path="/day/:date" element={<DayView user={user} onViewUsed={rememberView} />} />
             <Route path="/tag/:slug" element={<TagPage user={user} />} />
             {user.is_admin && (
-              <Route path="/admin" element={<AdminSettings currentUser={user} onSelfChanged={refreshStatus} />} />
+              <Route path="/admin" element={<AdminSettings currentUser={user} mfa={status.mfa} onSelfChanged={refreshStatus} />} />
             )}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

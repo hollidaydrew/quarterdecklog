@@ -3,6 +3,35 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.10.0] - 2026-10-08
+
+### Added
+- **Two-step sign-in (optional, admin controlled).** An admin turns it on for the whole team under Admin, then Security. People then set up an authenticator app (Microsoft Authenticator, Google Authenticator, Authy, 1Password and similar) at their next sign-in and enter its 6-digit code. A device that passes a code is trusted for exactly 7 days, then asks again; signing in again does not extend it, and each device has its own 7 days. Each person can trust up to 5 devices: the 5th shows a notice (you can close it), a 6th is refused until a slot is freed under My profile, where trusted devices are listed and can be removed. Ten one-time recovery codes are shown once at setup. Five wrong codes lock that account for 15 minutes; an admin can unlock it, or reset one person's setup (a lost phone) in Team. Admin, Security also has Reset everyone (type HARD RESET), which deletes every setup and works even if the key is lost. Secrets are stored encrypted. Off by default; nothing changes until an admin turns it on. API keys are not affected.
+- **Since you last signed in.** After signing in, a note lists the entries other people (and the API) added since your previous sign-in, with a link to each day.
+- **Edited marker.** An entry changed after it was written shows when it was edited (the earlier text stays visible to admins in the Activity log).
+- **Late entry label.** An entry written on a later day than the day it belongs to is marked "Late entry".
+- **Pinned notes.** A pin icon on an entry pins it to a Pinned section at the top of the day, List and Calendar pages (up to 5 at a time). Anyone can pin or unpin.
+- **Copy icon.** Copies an entry as plain text: who wrote it, when, the text, and its tags.
+- **Tag and person filters** on Rollup and Search. Print / PDF and Export CSV follow the filters. The Rollup CSV also gains Edited and Late entry columns.
+- **Export and import** (Admin, then Data). Export downloads every entry, tag and author name as one file, with no passwords, API keys or Activity log. Import adds a file's entries and tags back: nothing already here is changed or deleted, entries already here are skipped, and people who are not here become locked accounts that cannot sign in.
+- The API now reports `edited_at`, `late` and `pinned` on each entry.
+- Activity log: new events for pins, exports, imports, and the two-step changes above.
+
+### Changed
+- New optional settings in `.env`: `MFA_ENCRYPTION_KEY` (needed before two-step can be turned on; keep a copy) and `MFA_FORCE_OFF` (emergency way back in). See the README.
+- If two-step is on and `MFA_ENCRYPTION_KEY` goes missing, sign-ins are refused (not skipped) until it is restored or `MFA_FORCE_OFF=true` is set.
+
+### Security
+- Two-step secrets are encrypted with AES-256-GCM using a key derived from `MFA_ENCRYPTION_KEY`, which is separate from `SESSION_SECRET`. Recovery codes and trusted-device cookies are stored only as hashes. A correct password alone never opens any page or API call when a code is still needed.
+- Import treats the file as untrusted: strict format checks, size and count limits, every entry cleaned again, add-only, and one database transaction.
+- Rollup and Search filters use bound parameters only.
+
+### Upgrading from 0.9.0
+- Your data is kept. The database gets new columns on entries and users and two new tables; nothing is rewritten or removed.
+- Two-step stays off. To use it later, add `MFA_ENCRYPTION_KEY` (for example from `openssl rand -hex 32`) to `.env` and keep a copy of it somewhere safe.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.9.0] - 2026-10-08
 
 ### Changed
