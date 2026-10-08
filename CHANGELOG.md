@@ -7,6 +7,7 @@ shows this list when you click the version number in the footer.
 
 ### Changed
 - Rollup and Search are tidier: the "Rollup" and "Search" labels and the entry-count line above the entries are gone; the date button is the same size as the Year and quarter buttons; Person is now User and Everyone is now All Users (including the Person column in the exported file, now User); Print / PDF is now Print and Export CSV is now Export (Export still downloads a spreadsheet file); the User and Sort drop-downs match the size of the other filter controls; the Search box no longer shows the browser's own outline; and only the Per page choice shows above the entries; when a number splits the results into pages, the range and Previous / Next appear below them.
+- The release notes you open from the version number now leave out the technical upgrade steps for the people who run the server unless you are an admin. Admins still see everything.
 - Rollup and Search now use the same typeface as the rest of the app. 0.11.0 mixed in a second, typewriter-style font for the range, dates and counts; those now use the normal font, with numerals that still line up.
 
 ### Upgrading from 0.11.0

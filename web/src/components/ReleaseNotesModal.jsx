@@ -2,16 +2,19 @@ import { useState } from 'react';
 import Modal from './Modal.jsx';
 import { CREDITS, RELEASES } from '../lib/releases.js';
 import { formatUs } from '../lib/dates.js';
+import { releasesFor } from '../lib/releaseNotes.js';
 
-function ReleaseList() {
+function ReleaseList({ isAdmin }) {
+  const releases = releasesFor(RELEASES, isAdmin);
   return (
     <>
-      {RELEASES.length === 0 && <p className="muted">No release notes yet.</p>}
-      {RELEASES.map((release) => (
+      {releases.length === 0 && <p className="muted">No release notes yet.</p>}
+      {releases.map((release) => (
         <section key={release.version} className="release">
           <h3>
             v{release.version} <span className="muted">{formatUs(release.date)}</span>
           </h3>
+          {release.sections.length === 0 && <p className="muted">Behind-the-scenes updates.</p>}
           {release.sections.map((section) => (
             <div key={section.title}>
               <h4>{section.title}</h4>
@@ -65,7 +68,8 @@ function CreditsList() {
   );
 }
 
-export default function ReleaseNotesModal({ onClose }) {
+// isAdmin: admins also see the server upgrade steps; everyone else does not.
+export default function ReleaseNotesModal({ onClose, isAdmin = false }) {
   const [tab, setTab] = useState('notes');
 
   return (
@@ -82,7 +86,7 @@ export default function ReleaseNotesModal({ onClose }) {
           Credits
         </button>
       </div>
-      <div role="tabpanel">{tab === 'notes' ? <ReleaseList /> : <CreditsList />}</div>
+      <div role="tabpanel">{tab === 'notes' ? <ReleaseList isAdmin={isAdmin} /> : <CreditsList />}</div>
     </Modal>
   );
 }
