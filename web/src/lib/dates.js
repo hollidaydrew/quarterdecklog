@@ -64,6 +64,14 @@ export function formatListLabel(s, count = 0) {
   return `${formatUs(s)} ${weekdayName(s)}${count > 0 ? ` (${count})` : ''}`;
 }
 
+// A "late entry": written on a later day (in the viewer's local time) than the
+// day it belongs to, like a paper log's late entry. Done in the browser because
+// entry_date is the writer's local day and created_at is UTC.
+export function isLateEntry(entry) {
+  const written = parseSqlUtc(entry.created_at);
+  return toDateStr(written.getFullYear(), written.getMonth() + 1, written.getDate()) > entry.entry_date;
+}
+
 // SQLite stores UTC as "YYYY-MM-DD HH:MM:SS". Parse it as UTC; the formatters
 // below then show it in the browser's local time.
 export function parseSqlUtc(value) {

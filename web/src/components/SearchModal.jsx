@@ -14,22 +14,24 @@ export default function SearchModal({ onClose }) {
   const [searched, setSearched] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [allTags, setAllTags] = useState([]);
+  const [authors, setAuthors] = useState([]);
+  const [tagIds, setTagIds] = useState([]); // an entry with ANY of these stays
+  const [authorId, setAuthorId] = useState('');
+  const tagKey = tagIds.join(',');
 
   useEffect(() => {
     if (inputRef.current) inputRef.current.focus();
+    api.get('/api/tags').then(setAllTags).catch(() => {});
+    api.get('/api/entries/authors').then(setAuthors).catch(() => {});
   }, []);
 
-  const submit = async (e) => {
-    e.preventDefault();
-    const q = query.trim();
-    if (q.length < 2) {
-      setError('Type at least 2 characters.');
-      return;
-    }
+  const runSearch = async (q) => {
     setBusy(true);
     setError('');
     try {
-      setFound(await api.get(`/api/entries/search?q=${encodeURIComponent(q)}`));
+      const extra = `${tagKey ? `&tag_ids=${tagKey}` : ''}${authorId !== '' ? `&author_id=${authorId}` : ''}`;
+      setFound(await api.get(`/api/entries/search?q=${encodeURIComponent(q)}${extra}`));
       setSearched(q);
     } catch (err) {
       setError(err.message);
@@ -37,6 +39,25 @@ export default function SearchModal({ onClose }) {
       setBusy(false);
     }
   };
+
+  const submit = (e) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (q.length < 2) {
+      setError('Type at least 2 characters.');
+      return;
+    }
+    runSearch(q);
+  };
+
+  // Changing a filter after a search runs the same words again.
+  useEffect(() => {
+    if (searched) runSearch(searched);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tagKey, authorId]);
+
+  const toggleTag = (id) => setTagIds((ids) => (ids.includes(id) ? ids.filter((t) => t !== id) : [...ids, id]));
+  const filtered = tagIds.length > 0 || authorId !== '';
 
   const open = (date) => {
     onClose();
@@ -61,6 +82,24 @@ export default function SearchModal({ onClose }) {
         />
         <button type="submit" disabled={busy}>{busy ? 'Searching…' : 'Search'}</button>
       </form>
+      {(allTags.length > 0 || authors.length > 1) && (
+        <div className="filter-bar">
+          {allTags.map((tag) => (
+            <TagChip key={tag.id} tag={tag} outline active={tagIds.includes(tag.id)} onClick={() => toggleTag(tag.id)} />
+          ))}
+          {authors.length > 1 && (
+            <select value={authorId} onChange={(e) => setAuthorId(e.target.value)} aria-label="Person">
+              <option value="">Everyone</option>
+              {authors.map((a) => (
+                <option key={a.id} value={a.id}>{a.name}{a.deleted ? ' (deleted user)' : ''}</option>
+              ))}
+            </select>
+          )}
+          {filtered && (
+            <button type="button" className="secondary" style={{ padding: '4px 10px' }} onClick={() => { setTagIds([]); setAuthorId(''); }}>Clear filters</button>
+          )}
+        </div>
+      )}
       {error && <p className="error-text">{error}</p>}
       {found && found.total === 0 && <p className="muted">No entries match &ldquo;{searched}&rdquo;.</p>}
       {found && found.total > 0 && (

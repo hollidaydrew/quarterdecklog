@@ -18,6 +18,8 @@ import ProfileModal from './components/ProfileModal.jsx';
 import UserGuideModal from './components/UserGuideModal.jsx';
 import ActivityLogModal from './components/ActivityLogModal.jsx';
 import SearchModal from './components/SearchModal.jsx';
+import PinnedNotes from './components/PinnedNotes.jsx';
+import SinceBanner from './components/SinceBanner.jsx';
 
 export default function App() {
   const [status, setStatus] = useState(null); // { setupRequired, user } | null while loading
@@ -93,6 +95,8 @@ export default function App() {
   } else {
     const user = status.user;
     const isList = location.pathname.startsWith('/list');
+    // Pinned notes sit above the day view, List and Calendar.
+    const showPinned = /^\/(list|calendar|day)(\/|$)/.test(location.pathname);
     content = (
       <div className={`app-shell${isList ? ' fill' : ''}`}>
         <header className="topbar">
@@ -131,6 +135,8 @@ export default function App() {
         {menuModal === 'search' && <SearchModal onClose={() => setMenuModal(null)} />}
         {menuModal === 'activity' && user.is_admin && <ActivityLogModal onClose={() => setMenuModal(null)} />}
         <div className={`main-content${isList ? ' wide fill' : ''}`}>
+          <SinceBanner previousLoginAt={status.previousLoginAt} />
+          {showPinned && <PinnedNotes />}
           <Routes>
             <Route path="/" element={<Navigate to={user.preferred_view === 'calendar' ? '/calendar' : '/list'} replace />} />
             <Route path="/list/:date?" element={<ListPage user={user} onViewUsed={rememberView} />} />

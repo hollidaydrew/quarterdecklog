@@ -1,7 +1,7 @@
-import { formatDateTimeShort, formatUs, weekdayName } from './dates.js';
+import { formatDateTimeShort, formatUs, isLateEntry, weekdayName } from './dates.js';
 import { downloadCsv } from './activityCsv.js';
 
-const HEADERS = ['Date', 'Day', 'Person', 'Created', 'Tags', 'Entry'];
+const HEADERS = ['Date', 'Day', 'Person', 'Created', 'Edited', 'Late entry', 'Tags', 'Entry'];
 
 // The readable text of an entry's HTML body, one line per block.
 export function bodyToText(html) {
@@ -29,6 +29,8 @@ export function rollupToCsv(entries) {
         weekdayName(e.entry_date),
         e.author_name,
         formatDateTimeShort(e.created_at),
+        e.edited_at ? formatDateTimeShort(e.edited_at) : '',
+        isLateEntry(e) ? 'Yes' : '',
         e.tags.map((t) => t.name).join(', '),
         bodyToText(e.body),
       ]
@@ -39,6 +41,6 @@ export function rollupToCsv(entries) {
   return `﻿${lines.join('\r\n')}\r\n`;
 }
 
-export function downloadRollupCsv(entries, from, to) {
-  downloadCsv(`quarterdecklog-rollup-${from}-to-${to}.csv`, rollupToCsv(entries));
+export function downloadRollupCsv(entries, from, to, filtered = false) {
+  downloadCsv(`quarterdecklog-rollup-${from}-to-${to}${filtered ? '-filtered' : ''}.csv`, rollupToCsv(entries));
 }

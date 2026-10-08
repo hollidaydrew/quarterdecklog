@@ -55,10 +55,20 @@ const entrySchema = {
       },
       required: ['name', 'is_system'],
     },
-    created_at: { type: 'string', description: 'UTC, ISO 8601' },
+    created_at: { type: 'string', description: 'When it was written. UTC, ISO 8601' },
     updated_at: { type: 'string', description: 'UTC, ISO 8601' },
+    edited_at: {
+      type: 'string',
+      nullable: true,
+      description: 'When its text or tags last really changed (UTC, ISO 8601), or null if it was never edited',
+    },
+    late: {
+      type: 'boolean',
+      description: "True when it was written on a later (UTC) day than the day it belongs to, like a paper log's late entry",
+    },
+    pinned: { type: 'boolean', description: 'True when an admin or team member pinned it as a standing note (read only here)' },
   },
-  required: ['id', 'entry_date', 'text', 'html', 'tags', 'author', 'created_at', 'updated_at'],
+  required: ['id', 'entry_date', 'text', 'html', 'tags', 'author', 'created_at', 'updated_at', 'edited_at', 'late', 'pinned'],
 };
 const security = [{ bearerAuth: [] }];
 const errors = (...codes) =>
@@ -157,6 +167,9 @@ function present(row) {
     author: { name: row.author_name, is_system: !!row.author_is_system },
     created_at: isoUtc(row.created_at),
     updated_at: isoUtc(row.updated_at),
+    edited_at: row.edited_at ? isoUtc(row.edited_at) : null,
+    late: row.created_at.slice(0, 10) > row.entry_date,
+    pinned: !!row.pinned_at,
   };
 }
 
@@ -459,6 +472,7 @@ export default async function apiV1Routes(fastify) {
       })();
       const afterTags = tagNamesFor(entry.id);
       if (built.clean !== entry.body || beforeTags.join() !== afterTags.join()) {
+        db.prepare("UPDATE entries SET edited_at = datetime('now') WHERE id = ?").run(entry.id);
         logActivity(actorFor(request.apiKey), 'entry_updated', `${request.apiKey.name} edited an entry for ${usDate(entry.entry_date)}`, {
           entry_id: entry.id,
           entry_date: entry.entry_date,

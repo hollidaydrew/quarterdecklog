@@ -145,3 +145,15 @@ export const SYSTEM_USER_ID = db.transaction(() => {
       .run(username).lastInsertRowid
   );
 })();
+
+// --- v0.10.0: since-last-sign-in, edited marker, pinned notes, filters ---
+// Additive only. edited_at is set only when an entry's text or tags really
+// change (updated_at moves on every save, so it can't be used for this).
+// pinned_by_name is kept as text so deleting a person doesn't blank it.
+addColumnIfMissing('entries', 'edited_at', 'TEXT');
+addColumnIfMissing('entries', 'pinned_at', 'TEXT');
+addColumnIfMissing('entries', 'pinned_by_name', 'TEXT');
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_entries_created ON entries(created_at);
+  CREATE INDEX IF NOT EXISTS idx_entry_tags_tag ON entry_tags(tag_id);
+`);
