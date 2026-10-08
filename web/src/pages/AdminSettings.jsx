@@ -1,9 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import TagChip from '../components/TagChip.jsx';
 import Modal from '../components/Modal.jsx';
 import MfaSetup from '../components/MfaSetup.jsx';
 import { formatDateTimeShort, formatUsFromDate } from '../lib/dates.js';
+
+// Where the Entries number goes: the Search page showing the entries with that
+// tag. Search needs words to look for, so the tag's own name is used, and the tag
+// filter keeps it to entries that actually carry the tag. A tag that nothing uses,
+// or whose name has no searchable words (for example "!!" or a single letter),
+// is not a link.
+function linkToTag(tag) {
+  const name = tag.name.trim();
+  const searchable = name.length >= 2 && /[\p{L}\p{N}]/u.test(name);
+  if (!tag.uses || !searchable) return null;
+  return `/search?q=${encodeURIComponent(name)}&tags=${tag.id}`;
+}
 
 // Admin, Tags: a table of every tag with its color and how many entries use
 // it. A tag's color can be changed; its name never can.
@@ -96,7 +109,15 @@ function TagManager() {
                       </>
                     )}
                   </td>
-                  <td className="col-uses">{tag.uses}<span className="uses-word"> {tag.uses === 1 ? 'entry' : 'entries'}</span></td>
+                  <td className="col-uses">
+                    {linkToTag(tag) ? (
+                      <Link to={linkToTag(tag)} title={`Search the entries tagged ${tag.name}`}>
+                        {tag.uses}<span className="uses-word"> {tag.uses === 1 ? 'entry' : 'entries'}</span>
+                      </Link>
+                    ) : (
+                      <>{tag.uses}<span className="uses-word"> {tag.uses === 1 ? 'entry' : 'entries'}</span></>
+                    )}
+                  </td>
                   <td className="col-actions">
                     <div className="tag-actions">
                       {isEditing ? (
@@ -106,7 +127,7 @@ function TagManager() {
                         </>
                       ) : (
                         <>
-                          <button type="button" className="secondary" onClick={() => setEditing({ id: tag.id, color: tag.color })} aria-label={`Change the color of the ${tag.name} tag`}>Color</button>
+                          <button type="button" className="secondary" onClick={() => setEditing({ id: tag.id, color: tag.color })} aria-label={`Edit the color of the ${tag.name} tag`}>Edit Color</button>
                           <button type="button" className="secondary btn-delete" onClick={() => deleteTag(tag)} aria-label={`Delete the ${tag.name} tag`}>Delete</button>
                         </>
                       )}
