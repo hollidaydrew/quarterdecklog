@@ -3,6 +3,16 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.11.1] - 2026-10-08
+
+### Changed
+- Rollup and Search now use the same typeface as the rest of the app. 0.11.0 mixed in a second, typewriter-style font for the range, dates and counts; those now use the normal font, with numerals that still line up.
+
+### Upgrading from 0.11.0
+- Your data is kept. No database changes.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.11.0] - 2026-10-08
 
 ### Added
