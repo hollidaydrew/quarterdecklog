@@ -830,7 +830,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .filter-on { color: var(--color-primary-dark); letter-spacing: 0.06em; }
 .filter-head-actions { display: flex; align-items: center; gap: 8px; }
 .filter-clear, .filter-toggle { padding: 3px 12px; font-size: 13px; }
-.filter-toggle { display: none; }
 .filter-row {
   display: grid;
   grid-template-columns: 78px minmax(0, 1fr);
@@ -840,6 +839,9 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   border-top: 1px solid var(--color-border);
 }
 .filter-head + .filter-body .filter-row:first-child { margin-top: 6px; }
+/* Folded away: just the header with its count and buttons. */
+.filter-panel:not(.is-open) .filter-body { display: none; }
+.filter-panel:not(.is-open) { padding-bottom: 12px; }
 .filter-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 24px; border-top: 1px solid var(--color-border); }
 .filter-pair .filter-row { border-top: none; }
 .filter-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-faint); }
@@ -921,9 +923,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 
 /* -- Phones: the filters fold away behind a button that says how many are on. -- */
 @media (max-width: 700px) {
-  .filter-toggle { display: inline-block; }
-  .filter-body { display: none; }
-  .filter-panel.is-open .filter-body { display: block; }
   .filter-row { grid-template-columns: 1fr; padding: 10px 0; }
   .filter-dates .dp-trigger-row { min-width: 0; width: 100%; }
   .filter-dates .dp, .filter-dates .dp-trigger { width: 100%; }
