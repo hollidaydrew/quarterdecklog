@@ -12,15 +12,23 @@ Click a day on the calendar, see everything that was logged. Write entries in a 
 - Admin-managed, color-coded tags; click tags above a day's entries to filter them
 - Only an entry's author, or an admin, can edit or delete it
 
+**Reading and handing off**
+- Each entry shows who wrote it and when, when it was edited, and a "Late entry" label if it was written on a later day than it belongs to
+- Pinned notes (up to 5) stay at the top of the day, List and Calendar pages; a copy icon copies an entry as plain text
+- After signing in, a note lists what other people added since your last sign-in
+
 **Finding things**
 - List view: a scrolling list of dates with the selected day's entries beside it, a single-day or date-range filter, an "Entries" check box that hides empty days, and one-click Year / Q1 to Q4 buttons
 - Calendar view: click a day, see that day's entries, newest first
 - Search: every entry's text and tags, newest first, with a short excerpt
 - Rollup: every entry in a date range on one page, with Print / PDF and Export CSV
+- Tag and person filters on Rollup and Search (print and CSV follow the filters)
 
 **Running it**
 - Invite-link onboarding; there is no public signup
-- Admin tools: tags, invites, team members (edit, reset password, delete, last login) and API keys
+- Admin tools: tags, invites, team members (edit, reset password, delete, last login), API keys, security and data
+- Optional two-step sign-in (admin controlled): authenticator-app codes (Microsoft Authenticator, Google Authenticator and similar), trusted for 7 days per device, up to 5 devices each, recovery codes, and an emergency off switch
+- Export and import: download every entry, tag and author as one file, and add a file's entries back (add-only)
 - Activity log (admins): the last 5,000 events, including entry text and changes, with CSV export
 - My profile (everyone): change your own display name, username and password
 - API (off by default): admin-issued, named keys let scripts add and read entries and tags, with an admin-only Swagger "API Docs" page
@@ -84,6 +92,8 @@ All configuration is via environment variables (see `.env.example`):
 | `SESSION_SECRET` | Yes | Random string (32+ chars) used to sign session cookies. Generate with `openssl rand -hex 32`. The app refuses to start without one. |
 | `HOST_PORT` | No | Host-side port mapped to the container (default `7272`). |
 | `API_ENABLED` | No | Set to `true` to turn on the API and API Docs (default `false`). See [API](#api). |
+| `MFA_ENCRYPTION_KEY` | No | Needed before an admin can turn on two-step sign-in. At least 32 characters (`openssl rand -hex 32`). It encrypts each person's authenticator secret and is separate from `SESSION_SECRET`, so changing the session secret never affects it. **Keep a copy**: if it is lost or changed the secrets can't be read, and an admin uses Admin, Security, Reset everyone so everyone sets up again. |
+| `MFA_FORCE_OFF` | No | Emergency only: `true` ignores two-step sign-in entirely, so a locked-out admin can sign in with a password. Restart, fix things, then remove it. While two-step is on and `MFA_ENCRYPTION_KEY` is missing, nobody can sign in until it is restored or this is set. |
 
 ## API
 
@@ -123,6 +133,8 @@ This repo is public, so a few things are worth knowing if you're running your ow
 - Dependabot and a GitHub Actions secret-scan (gitleaks) run on this repo — see `.github/`.
 - Every response carries browser security headers (content security policy, no framing, no sniffing), and API responses are never cached.
 - Anyone can edit their own display name, username and password, but a request to change a role is refused for everyone except through an admin editing someone else. Entries can only be edited or deleted by their author or an admin (enforced on the server).
+- Two-step sign-in is off until an admin turns it on for the team. Authenticator secrets are encrypted at rest (AES-256-GCM) with a key that is separate from the session secret; recovery codes and trusted-device cookies are stored only as hashes. A password alone opens nothing while a code is still needed, wrong codes lock the account for 15 minutes, and a code can't be used twice. A device that passes a code is trusted for a fixed 7 days (up to 5 devices per person).
+- Importing a log file is add-only, validated strictly and cleaned again, and runs as one transaction. Exports contain no passwords, keys or Activity log.
 - API keys are 256-bit random values; only a SHA-256 hash is stored. A key works on `/api/v1` only, can be revoked or set to expire, and is rate-limited. The API is off unless `API_ENABLED=true`.
 - The activity log is admin-only. It keeps entry text (including text of deleted entries) for up to 5,000 events.
 

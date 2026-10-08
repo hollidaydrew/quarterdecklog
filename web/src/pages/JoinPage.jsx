@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import Logo from '../components/Logo.jsx';
+import MfaSetup from '../components/MfaSetup.jsx';
 
 export default function JoinPage({ onDone }) {
   const { token } = useParams();
@@ -14,6 +15,7 @@ export default function JoinPage({ onDone }) {
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [needsSetup, setNeedsSetup] = useState(false); // two-step is on: set up the authenticator before signing in
 
   useEffect(() => {
     api
@@ -31,8 +33,9 @@ export default function JoinPage({ onDone }) {
     }
     setBusy(true);
     try {
-      await api.post(`/api/auth/join/${token}`, { username, display_name: displayName, password });
-      await onDone();
+      const r = await api.post(`/api/auth/join/${token}`, { username, display_name: displayName, password });
+      if (r && r.mfa_required === 'setup') setNeedsSetup(true);
+      else await onDone();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,6 +52,18 @@ export default function JoinPage({ onDone }) {
           <Logo className="auth-logo" />
           <p className="error-text">{inviteError}</p>
           <p className="muted">Ask whoever sent you this link to generate a new one.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (needsSetup) {
+    return (
+      <div className="auth-screen">
+        <div className="auth-card card">
+          <Logo className="auth-logo" />
+          <p className="muted" style={{ margin: 0 }}>Your account is ready. Two-step sign-in is on for this team, so set it up now.</p>
+          <MfaSetup needPassword={false} onFinished={onDone} />
         </div>
       </div>
     );
