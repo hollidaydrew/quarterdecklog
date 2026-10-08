@@ -812,11 +812,8 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 /* ======================================================================
    Rollup + Search: one family. A boxed Filters panel, then results laid out
    like a page from the log (a double-ruled header, days ruled off with their
-   entry counts). Figures use tabular monospace, like a typed log.
+   entry counts). One typeface throughout; figures use tabular numerals so they line up.
    ====================================================================== */
-:root {
-  --font-figure: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
-}
 .results-page { display: flex; flex-direction: column; gap: 14px; }
 .results-page .page-toolbar { margin-bottom: 0; }
 
@@ -866,7 +863,7 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--color-text-faint); pointer-events: none; }
 .search-bar button { padding: 0 24px; font-size: 16px; border-radius: 12px; }
 .search-hint { margin: -6px 2px 0; font-size: 13px; color: var(--color-text-muted); }
-.search-hint code { font-family: var(--font-figure); font-size: 12px; padding: 1px 5px; border-radius: 4px; background: var(--color-primary-tint); }
+.search-hint code { font-family: inherit; font-size: 12px; font-weight: 600; padding: 1px 5px; border-radius: 4px; background: var(--color-primary-tint); }
 .search-start { margin: 8px 2px; max-width: 60ch; line-height: 1.5; }
 
 /* -- Results header: the signature. A double rule, like the head of a log page. -- */
@@ -882,9 +879,9 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 }
 .results-id { min-width: 0; flex: 1 1 320px; }
 .results-eyebrow { margin: 0 0 2px; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-primary-dark); }
-.results-title { margin: 0; font-family: var(--font-figure); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.results-title { margin: 0; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; overflow-wrap: anywhere; }
 .results-meta { margin: 6px 0 0; font-size: 14px; color: var(--color-text-muted); }
-.results-meta .figure { font-family: var(--font-figure); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--color-text); }
+.results-meta .figure { font-size: 14px; font-variant-numeric: tabular-nums; color: var(--color-text); }
 .results-note { margin: 6px 0 0; }
 .results-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .results-empty { margin: 12px 2px; }
@@ -894,15 +891,15 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .pager label { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
 .pager select { width: auto; padding: 3px 8px; font-size: 13px; }
 .pager button { padding: 3px 12px; font-size: 13px; }
-.pager-range { font-family: var(--font-figure); font-size: 12px; font-variant-numeric: tabular-nums; }
+.pager-range { font-size: 13px; font-variant-numeric: tabular-nums; }
 
 /* -- Days, ruled off with their entry counts -- */
 .day-group .entry-card { margin-bottom: 10px; break-inside: avoid; }
 .day-head { display: flex; align-items: baseline; gap: 10px; margin: 22px 0 10px; font-size: 13px; font-weight: 400; }
-.day-date { font-family: var(--font-figure); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-text); }
+.day-date { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-text); }
 .day-name { color: var(--color-text-muted); }
 .day-rule { flex: 1; align-self: center; border-bottom: 1px solid var(--color-border); }
-.day-count { font-family: var(--font-figure); font-size: 12px; color: var(--color-text-faint); font-variant-numeric: tabular-nums; }
+.day-count { font-size: 13px; color: var(--color-text-faint); font-variant-numeric: tabular-nums; }
 
 /* Matched words in a search result: the soft orange the app already uses for incidents. */
 .entry-body mark { background: #fff1dc; color: inherit; border-radius: 3px; padding: 0 1px; box-shadow: 0 0 0 1px #f3c58a; }
