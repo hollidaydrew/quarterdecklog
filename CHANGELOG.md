@@ -10,6 +10,7 @@ shows this list when you click the version number in the footer.
 - Print looks more like the site. Each entry's tags now print as the same colored pills, on the same line as the author and time, right-aligned. The line under each day is twice as thick, and a thin line under every entry separates them. The pills print in color even when the print window's "Background graphics" option is off.
 
 ### Fixed
+- A pinned entry in the Pinned section now keeps the same highlight color it has in the log (for example, a pinned Incident stays light orange).
 - Print now works on phones and tablets. The printable page opens in its own tab with a Print button (and a Close button), instead of trying to print from behind the scenes, which phones don't support.
 
 ### Upgrading from 0.11.1
