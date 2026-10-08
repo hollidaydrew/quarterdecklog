@@ -844,7 +844,14 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 .filter-pair .filter-row { border-top: none; }
 .filter-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-faint); }
 .filter-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
-.filter-field select { width: auto; max-width: 100%; }
+.filter-field select {
+  width: auto;
+  max-width: 100%;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
 .filter-dates { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; }
 .filter-dates .dp-trigger-row { gap: 6px; }
 /* The date button is the same size as the Year / Q1-Q4 buttons next to it. */
@@ -861,9 +868,15 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
   width: 100%;
   font-size: 18px;
   padding: 13px 16px 13px 46px;
+  border: 1px solid var(--color-border);
   border-radius: 12px;
+  background: var(--color-surface);
   box-shadow: var(--shadow);
+  -webkit-appearance: none;
+  appearance: none;
 }
+/* The same focus ring as the app's other inputs, instead of the browser's own. */
+.search-field input:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
 .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--color-text-faint); pointer-events: none; }
 .search-bar button { padding: 0 24px; font-size: 16px; border-radius: 12px; }
 .search-hint { margin: -6px 2px 0; font-size: 13px; color: var(--color-text-muted); }
