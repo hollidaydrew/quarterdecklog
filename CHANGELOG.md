@@ -7,10 +7,12 @@ shows this list when you click the version number in the footer.
 
 ### Changed
 - The Filters box on Rollup and Search now has a Hide filters / Show filters button on every screen, not just on a phone. Its header still shows how many filters are on, and it remembers whether you left it open or folded away.
+- Admin, Tags: each tag has a Color button, so a tag's color can be changed after it is created. A tag's name can't be changed.
 - Print looks more like the site. Each entry's tags now print as the same colored pills, on the same line as the author and time, right-aligned. The line under each day is twice as thick, and a thin line under every entry separates them. The pills print in color even when the print window's "Background graphics" option is off.
 
 ### Fixed
-- Admin, Tags: each tag has a Color button, so a tag's color can be changed after it is created. A tag's name can't be changed.
+- On the Admin, Team list, stray zeros no longer appear between the Edit and Reset password buttons.
+- On a phone, the Admin tabs (including Security and Data) wrap onto a second line instead of running off the edge of the card.
 - A pinned entry in the Pinned section now keeps the same highlight color it has in the log (for example, a pinned Incident stays light orange).
 - Print now works on phones and tablets. The printable page opens in its own tab with a Print button (and a Close button), instead of trying to print from behind the scenes, which phones don't support.
 

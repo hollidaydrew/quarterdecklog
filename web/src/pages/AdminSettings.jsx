@@ -334,8 +334,8 @@ function UserRoster({ currentUser, mfaActive, onSelfChanged }) {
             </span>
             <span className="row-actions">
               <button className="secondary" onClick={() => setEditing(u)}>Edit</button>
-              {u.mfa_locked && <button className="secondary" onClick={() => unlock(u)}>Unlock</button>}
-              {u.mfa_enrolled && <button className="secondary" onClick={() => resetTwoStep(u)}>Reset two-step</button>}
+              {!!u.mfa_locked && <button className="secondary" onClick={() => unlock(u)}>Unlock</button>}
+              {!!u.mfa_enrolled && <button className="secondary" onClick={() => resetTwoStep(u)}>Reset two-step</button>}
               {!isSelf && <button className="secondary" onClick={() => resetPassword(u)}>Reset password</button>}
               {!isSelf && <button className="danger" onClick={() => deleteUser(u)}>Delete</button>}
             </span>

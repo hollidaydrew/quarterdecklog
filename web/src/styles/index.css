@@ -358,8 +358,14 @@ input[type='text']:focus, input[type='password']:focus, textarea:focus, select:f
 
 .admin-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 20px;
+}
+/* On a phone the six tabs wrap onto a second line instead of running off the card. */
+@media (max-width: 700px) {
+  .admin-tabs { gap: 6px; }
+  .admin-tabs button { padding: 8px 12px; }
 }
 .admin-tabs button { background: transparent; color: var(--color-text-muted); }
 .admin-tabs button.active { background: var(--color-primary); color: white; }
