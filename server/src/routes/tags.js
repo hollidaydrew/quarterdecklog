@@ -7,7 +7,13 @@ const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
 export default async function tagRoutes(fastify) {
   fastify.get('/api/tags', { preHandler: requireAuth }, async () => {
-    return db.prepare('SELECT * FROM tags ORDER BY name COLLATE NOCASE').all();
+    // `uses` is how many entries carry the tag (the Admin tag list shows it).
+    return db
+      .prepare(
+        `SELECT tags.*, (SELECT COUNT(*) FROM entry_tags WHERE entry_tags.tag_id = tags.id) AS uses
+         FROM tags ORDER BY name COLLATE NOCASE`
+      )
+      .all();
   });
 
   fastify.post('/api/tags', { preHandler: requireAdmin }, async (request, reply) => {
@@ -17,6 +23,10 @@ export default async function tagRoutes(fastify) {
     }
     if (color && !COLOR_RE.test(color)) {
       return reply.code(400).send({ error: 'Color must be a hex value like #5B7CFA' });
+    }
+    // Names that differ only by capital letters are the same tag ("Outage" and "outage").
+    if (db.prepare('SELECT 1 FROM tags WHERE lower(trim(name)) = ?').get(name.trim().toLowerCase())) {
+      return reply.code(409).send({ error: 'A tag with that name already exists' });
     }
     try {
       const result = db

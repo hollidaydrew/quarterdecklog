@@ -773,8 +773,6 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 
 
 
-/* Admin, Tags: editing one tag's color */
-.tag-color-edit { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); }
 
 /* v0.10.0: entry card icons, late label, pinned notes, since-last-sign-in banner */
 .entry-actions { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
@@ -951,4 +949,43 @@ button:focus-visible, a:focus-visible, select:focus-visible, [tabindex]:focus-vi
 }
 @media print {
   .filter-panel, .search-bar, .search-hint, .pager { display: none !important; }
+}
+
+/* ---- Admin, Tags: a table of tags ---- */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.tag-add { display: flex; align-items: center; gap: 8px; }
+.tag-add input[type='text'] { flex: 1; min-width: 0; }
+.tag-add input[type='color'] { flex: 0 0 auto; width: 46px; height: 42px; padding: 4px; }
+.tag-add button { flex: 0 0 auto; white-space: nowrap; }
+.tag-table { width: 100%; margin-top: 18px; border-collapse: collapse; }
+.tag-table th {
+  padding: 0 8px 8px; text-align: left; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-faint);
+}
+.tag-table td { padding: 10px 8px; border-top: 1px solid var(--color-border); vertical-align: middle; }
+.tag-table th:first-child, .tag-table td:first-child { padding-left: 0; }
+.tag-table th:last-child, .tag-table td:last-child { padding-right: 0; }
+.tag-table .col-uses { font-variant-numeric: tabular-nums; color: var(--color-text-muted); }
+.tag-table .uses-word { display: none; }
+.tag-table .col-color { white-space: nowrap; }
+.tag-table .col-color input[type='color'] { width: 46px; height: 30px; padding: 2px; }
+.tag-table .col-actions { width: 1%; white-space: nowrap; }
+.tag-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.tag-actions button { padding: 4px 12px; font-size: 13px; }
+.tag-table .btn-delete { color: var(--color-danger); }
+.tag-table .btn-delete:hover { background: #fdecec; }
+.swatch { display: inline-block; width: 18px; height: 18px; vertical-align: middle; border-radius: 5px; border: 1px solid rgba(20, 24, 40, 0.15); }
+.hex { margin-left: 8px; font-size: 13px; color: var(--color-text-muted); text-transform: uppercase; font-variant-numeric: tabular-nums; vertical-align: middle; }
+.tag-empty { margin: 18px 0 4px; }
+@media (max-width: 700px) {
+  .tag-table thead { display: none; }
+  .tag-table tbody { display: block; margin-top: 4px; }
+  .tag-table tr { display: grid; grid-template-columns: 1fr auto; grid-template-areas: 'tag actions' 'color uses'; gap: 6px 10px; padding: 12px 0; border-top: 1px solid var(--color-border); }
+  .tag-table td { padding: 0; border-top: none; }
+  .tag-table .col-tag { grid-area: tag; align-self: center; }
+  .tag-table .col-actions { grid-area: actions; width: auto; }
+  .tag-actions { flex-wrap: wrap; }
+  .tag-table .col-color { grid-area: color; }
+  .tag-table .col-uses { grid-area: uses; justify-self: end; }
+  .tag-table .uses-word { display: inline; }
 }
