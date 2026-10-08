@@ -1,7 +1,7 @@
 import { formatDateTimeShort, formatUs, isLateEntry, weekdayName } from './dates.js';
 
-// Most entries Print / PDF will take in one go. Past this, the browser's print
-// layout gets slow, so the page asks for a shorter range (Export CSV has no limit).
+// Most entries Print will take in one go. Past this, the browser's print
+// layout gets slow, so the page asks for a shorter range (Export has no limit).
 export const PRINT_LIMIT = 1000;
 
 const escapeHtml = (s) =>

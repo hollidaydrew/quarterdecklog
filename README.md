@@ -21,8 +21,8 @@ Click a day on the calendar, see everything that was logged. Write entries in a 
 - List view: a scrolling list of dates with the selected day's entries beside it, a single-day or date-range filter, an "Entries" check box that hides empty days, and one-click Year / Q1 to Q4 buttons
 - Calendar view: click a day, see that day's entries, newest first
 - Search: its own page with filters for dates, tags and person. Words match from the start of a word, "quotes" for exact phrases, -word to leave one out, matched words highlighted, and results can be printed or exported like the Rollup
-- Rollup: every entry in a date range on one page, with Print / PDF and Export CSV
-- Rollup and Search share one Filters panel and results layout (tag, person and date filters; print and CSV follow the filters)
+- Rollup: every entry in a date range on one page, with Print and Export
+- Rollup and Search share one Filters panel and results layout (tag, user and date filters; print and export follow the filters)
 
 **Running it**
 - Invite-link onboarding; there is no public signup
@@ -162,7 +162,7 @@ If you find a security issue, please open a private security advisory on GitHub 
 ## Releasing
 
 1. Update the version in the root, `server/` and `web/` `package.json` files and lockfiles.
-2. Add the release to [CHANGELOG.md](CHANGELOG.md) (the footer and release notes read it).
+2. Add the release to [CHANGELOG.md](CHANGELOG.md) (the footer and release notes read it). The release notes shown in the app include only the **Added**, **Changed**, **Fixed** and **Removed** sections, so write those as plain reports of what changed in the app. Put security and dependency updates under **Security** and server instructions under **Upgrading from x.y.z**; they stay in the file for GitHub readers but are not shown in the app.
 3. If dependencies changed: `npm run generate:notices` and `npm run check:credits`, and update [CREDITS.md](CREDITS.md).
 
 ## License
