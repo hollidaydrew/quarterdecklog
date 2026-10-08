@@ -15,6 +15,7 @@ Click a day on the calendar, see everything that was logged. Write entries in a 
 - Admin tools: manage tags, invites and team members (edit, reset password, delete, last login)
 - Activity log (admins): the last 5,000 events, including entry text and changes, with CSV export
 - My profile (everyone): change your own display name, username and password
+- API (off by default): admin-issued keys let scripts add and read entries and tags, with a built-in Swagger "API Docs" page
 - In-app User Guide, plus release notes and credits
 - Release notes: click the version in the footer, or read [CHANGELOG.md](CHANGELOG.md)
 - Runs as a single Docker container with a SQLite database on a mounted volume
@@ -57,6 +58,27 @@ All configuration is via environment variables (see `.env.example`):
 |---|---|---|
 | `SESSION_SECRET` | Yes | Random string (32+ chars) used to sign session cookies. Generate with `openssl rand -hex 32`. The app refuses to start without one. |
 | `HOST_PORT` | No | Host-side port mapped to the container (default `7272`). |
+| `API_ENABLED` | No | Set to `true` to turn on the API and API Docs (default `false`). See [API](#api). |
+
+## API
+
+The API lets scripts and other systems add and read entries and tags. It is **off by default**.
+
+1. Set `API_ENABLED=true` in `.env` and restart the container.
+2. Sign in as an admin, open **Admin → API keys**, and create a key. Give it a friendly name (for example "Nagios"); that name is what the Activity log shows. Choose read only or read and write, and optionally an expiry. The key is shown once.
+3. Call `/api/v1` with `Authorization: Bearer <key>`. Admins can open **API Docs** from the menu for the full, try-it-out reference.
+
+```
+# add an entry (needs a read and write key)
+curl -X POST https://your-host/api/v1/entries \
+  -H "Authorization: Bearer $QDL_KEY" -H "Content-Type: application/json" \
+  -d '{"entry_date":"2026-10-08","text":"Backup finished OK","tags":["FYI"]}'
+
+# read a day
+curl -H "Authorization: Bearer $QDL_KEY" "https://your-host/api/v1/entries?date=2026-10-08"
+```
+
+Entries written through the API belong to the built-in user **System**. A key can edit or delete only those entries, never ones written by people. Keys are limited to 60 calls a minute, only a hash of each key is stored, and the API sends no CORS headers, so it is meant for servers and scripts, not for other websites.
 
 ## Reverse proxy / HTTPS
 
@@ -76,6 +98,7 @@ This repo is public, so a few things are worth knowing if you're running your ow
 - Dependabot and a GitHub Actions secret-scan (gitleaks) run on this repo — see `.github/`.
 - Every response carries browser security headers (content security policy, no framing, no sniffing), and API responses are never cached.
 - Anyone can edit their own display name, username and password, but a request to change a role is refused for everyone except through an admin editing someone else. Entries can only be edited or deleted by their author or an admin (enforced on the server).
+- API keys are 256-bit random values; only a SHA-256 hash is stored. A key works on `/api/v1` only, can be revoked or set to expire, and is rate-limited. The API is off unless `API_ENABLED=true`.
 - The activity log is admin-only. It keeps entry text (including text of deleted entries) for up to 5,000 events.
 
 If you find a security issue, please open a private security advisory on GitHub rather than a public issue.
@@ -88,7 +111,7 @@ If you find a security issue, please open a private security advisory on GitHub 
 
 ## Tech stack
 
-- Backend: Node.js 24, Fastify, better-sqlite3
+- Backend: Node.js 24, Fastify, better-sqlite3 (API docs: Swagger UI)
 - Frontend: React, Vite, [Trix](https://github.com/basecamp/trix) (rich-text editor)
 - Single multi-stage Dockerfile, SQLite on a named Docker volume
 

@@ -6,7 +6,7 @@ import { db } from '../db.js';
 export function loadSessionUser(request) {
   const id = request.session.userId;
   if (!id) return null;
-  return db.prepare('SELECT * FROM users WHERE id = ? AND deleted_at IS NULL').get(id) || null;
+  return db.prepare('SELECT * FROM users WHERE id = ? AND deleted_at IS NULL AND is_system = 0').get(id) || null;
 }
 
 // Requires a signed-in user, but allows one who still has to change a

@@ -19,7 +19,7 @@ function generateTempPassword() {
 }
 
 function findActiveUser(id) {
-  return db.prepare('SELECT * FROM users WHERE id = ? AND deleted_at IS NULL').get(id);
+  return db.prepare('SELECT * FROM users WHERE id = ? AND deleted_at IS NULL AND is_system = 0').get(id);
 }
 
 function activeAdminCount() {
@@ -34,7 +34,7 @@ export default async function userRoutes(fastify) {
                 inviter.display_name AS invited_by_name
          FROM users u
          LEFT JOIN users inviter ON inviter.id = u.invited_by
-         WHERE u.deleted_at IS NULL
+         WHERE u.deleted_at IS NULL AND u.is_system = 0
          ORDER BY u.created_at ASC, u.id ASC`
       )
       .all();

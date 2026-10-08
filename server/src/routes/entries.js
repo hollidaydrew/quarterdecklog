@@ -21,7 +21,7 @@ function snippetAround(text, term) {
   return `${start > 0 ? '…' : ''}${piece}${start + SNIPPET_CHARS < flat.length ? '…' : ''}`;
 }
 
-function attachTags(entry) {
+export function attachTags(entry) {
   const tags = db
     .prepare(
       `SELECT tags.id, tags.name, tags.color FROM tags
@@ -34,11 +34,11 @@ function attachTags(entry) {
 }
 
 // What the activity log keeps about an entry: plain text and tag names.
-function entrySnapshot(body, tagNames) {
+export function entrySnapshot(body, tagNames) {
   return { text: htmlToText(body), tags: tagNames };
 }
 
-function tagNamesFor(entryId) {
+export function tagNamesFor(entryId) {
   return attachTags({ id: entryId }).tags.map((t) => t.name);
 }
 

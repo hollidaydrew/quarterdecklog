@@ -117,6 +117,7 @@ export default function App() {
         {menuOpen && (
           <MenuDrawer
             user={user}
+            apiEnabled={!!status.apiEnabled}
             onClose={() => setMenuOpen(false)}
             onLogout={handleLogout}
             onOpenProfile={() => { setMenuOpen(false); setMenuModal('profile'); }}
