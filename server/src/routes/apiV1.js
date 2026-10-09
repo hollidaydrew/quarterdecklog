@@ -188,7 +188,8 @@ export default async function apiV1Routes(fastify) {
         description:
           'Add and read log entries and tags from scripts and other systems.\n\n' +
           '**Keys.** An admin creates a key under Admin → API keys and gives it a name. The key is shown once. ' +
-          'Send it on every call as `Authorization: Bearer <key>`. A read-only key can only read; a read and write key can also add entries and tags.\n\n' +
+          'Send it on every call as `Authorization: Bearer <key>`. A read-only key can only read; a read and write key can also add entries and tags. ' +
+          'To try a call from this page, click Authorize and paste a key.\n\n' +
           '**Authors.** Entries written through the API belong to the user "System". The Activity log shows the key\'s name as who did it.\n\n' +
           '**Limits.** 60 calls a minute per key (HTTP 429 with Retry-After when exceeded). Entry text is limited to ' +
           `${MAX_TEXT.toLocaleString('en-US')} characters (plain text) or ${MAX_HTML.toLocaleString('en-US')} (HTML), and ${MAX_TAGS_PER_ENTRY} tags per entry. ` +
@@ -212,22 +213,11 @@ export default async function apiV1Routes(fastify) {
     staticCSP: CSP,
     // The default top bar carries another project's logo and a box for loading
     // any spec URL; neither belongs here.
-    // A reference page only: the top bar, the Authorize button and the lock icons are
-    // hidden, and Try it out is turned off (it needs a key entered through
-    // Authorize). Keys are made in Admin, API keys.
-    theme: {
-      title: 'API Docs',
-      css: [
-        {
-          filename: 'qdl.css',
-          content:
-            '.swagger-ui .topbar { display: none; } ' +
-            '.swagger-ui .scheme-container { display: none; } ' +
-            '.swagger-ui .authorization__btn { display: none; }',
-        },
-      ],
-    },
-    uiConfig: { docExpansion: 'list', deepLinking: false, persistAuthorization: false, supportedSubmitMethods: [] },
+    // The default top bar carries another project's logo and a box for loading
+    // any spec URL; neither belongs here. Authorize stays: it is where a key
+    // made in Admin, API keys is pasted so Try it out can make real calls.
+    theme: { title: 'API Docs', css: [{ filename: 'qdl.css', content: '.swagger-ui .topbar { display: none; }' }] },
+    uiConfig: { docExpansion: 'list', deepLinking: false, persistAuthorization: false },
   });
 
   // Same {error} shape as the rest of the app, and never any internal detail
