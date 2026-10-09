@@ -10,7 +10,6 @@ shows this list when you click the version number in the footer.
 
 ### Changed
 - Admin, Tags: the Color button is now Edit Color, and the number under Entries is a link that opens Search with that tag's entries.
-- The API Docs page no longer shows the Authorize button, the lock icons or Try it out. It is a reference page; keys are made in Admin, API keys.
 - Admin, Tags is now a table: each tag with its color (a swatch and its code), how many entries use it, and Color and Delete buttons. Deleting asks how many entries will lose the tag. Adding a tag sits on one line above the table.
 
 ### Upgrading from 0.11.2
