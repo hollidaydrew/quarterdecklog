@@ -1,17 +1,34 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import TagChip from '../components/TagChip.jsx';
 import Modal from '../components/Modal.jsx';
 import MfaSetup from '../components/MfaSetup.jsx';
 import { formatDateTimeShort, formatUsFromDate } from '../lib/dates.js';
 
+// Where the Entries number goes: the Search page showing the entries with that
+// tag. Search needs words to look for, so the tag's own name is used, and the tag
+// filter keeps it to entries that actually carry the tag. A tag that nothing uses,
+// or whose name has no searchable words (for example "!!" or a single letter),
+// is not a link.
+function linkToTag(tag) {
+  const name = tag.name.trim();
+  const searchable = name.length >= 2 && /[\p{L}\p{N}]/u.test(name);
+  if (!tag.uses || !searchable) return null;
+  return `/search?q=${encodeURIComponent(name)}&tags=${tag.id}`;
+}
+
+// Admin, Tags: a table of every tag with its color and how many entries use
+// it. A tag's color can be changed; its name never can.
 function TagManager() {
   const [tags, setTags] = useState([]);
   const [name, setName] = useState('');
   const [color, setColor] = useState('#5B7CFA');
   const [error, setError] = useState('');
+  const [loaded, setLoaded] = useState(false);
+  const [editing, setEditing] = useState(null); // { id, color }
 
-  const load = () => api.get('/api/tags').then(setTags).catch(() => {});
+  const load = () => api.get('/api/tags').then((t) => { setTags(t); setLoaded(true); }).catch(() => setLoaded(true));
   useEffect(() => { load(); }, []);
 
   const addTag = async (e) => {
@@ -27,13 +44,17 @@ function TagManager() {
   };
 
   const deleteTag = async (tag) => {
-    if (!confirm(`Delete the "${tag.name}" tag? It will be removed from any entries using it.`)) return;
-    await api.del(`/api/tags/${tag.id}`);
-    load();
+    const used = tag.uses === 0 ? 'No entries use it.' : `It will be removed from ${tag.uses} ${tag.uses === 1 ? 'entry' : 'entries'}.`;
+    if (!confirm(`Delete the "${tag.name}" tag? ${used}`)) return;
+    setError('');
+    try {
+      await api.del(`/api/tags/${tag.id}`);
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
-  // Only a tag's color can be changed, never its name.
-  const [editing, setEditing] = useState(null); // { id, color }
   const saveColor = async () => {
     setError('');
     try {
@@ -46,45 +67,78 @@ function TagManager() {
   };
 
   return (
-    <div>
-      <form onSubmit={addTag} style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        <input type="text" placeholder="Tag name (e.g. bug, incident, FYI)" value={name} onChange={(e) => setName(e.target.value)} required />
-        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} style={{ width: 48, padding: 2 }} />
+    <div className="tag-manager">
+      <form onSubmit={addTag} className="tag-add" aria-label="Add a tag">
+        <input type="text" placeholder="New tag name (e.g. bug, FYI)" value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} aria-label="New tag name" />
+        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} aria-label="Color for the new tag" />
         <button type="submit">Add tag</button>
       </form>
-      {error && <p className="error-text">{error}</p>}
-      <div className="tag-filter-row">
-        {tags.map((tag) =>
-          editing && editing.id === tag.id ? (
-            <span key={tag.id} className="tag-color-edit">
-              <TagChip tag={{ ...tag, color: editing.color }} />
-              <input
-                type="color"
-                value={editing.color}
-                onChange={(e) => setEditing({ id: tag.id, color: e.target.value })}
-                aria-label={`Color for the ${tag.name} tag`}
-                style={{ width: 40, padding: 2 }}
-              />
-              <button type="button" style={{ padding: '2px 10px' }} onClick={saveColor}>Save</button>
-              <button type="button" className="secondary" style={{ padding: '2px 10px' }} onClick={() => setEditing(null)}>Cancel</button>
-            </span>
-          ) : (
-            <span key={tag.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <TagChip tag={tag} />
-              <button
-                className="secondary"
-                style={{ padding: '2px 8px' }}
-                onClick={() => setEditing({ id: tag.id, color: tag.color })}
-                aria-label={`Change the color of the ${tag.name} tag`}
-              >
-                Color
-              </button>
-              <button className="secondary" style={{ padding: '2px 8px' }} onClick={() => deleteTag(tag)} aria-label={`Delete the ${tag.name} tag`}>&times;</button>
-            </span>
-          )
-        )}
-        {tags.length === 0 && <p className="muted">No tags yet.</p>}
-      </div>
+      {error && <p className="error-text" role="alert">{error}</p>}
+
+      {loaded && tags.length === 0 ? (
+        <p className="muted tag-empty">No tags yet. Add the first one above.</p>
+      ) : (
+        <table className="tag-table" aria-label="Tags">
+          <thead>
+            <tr>
+              <th scope="col">Tag</th>
+              <th scope="col">Color</th>
+              <th scope="col">Entries</th>
+              <th scope="col"><span className="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {tags.map((tag) => {
+              const isEditing = !!editing && editing.id === tag.id;
+              const shown = isEditing ? editing.color : tag.color;
+              return (
+                <tr key={tag.id}>
+                  <td className="col-tag"><TagChip tag={{ ...tag, color: shown }} /></td>
+                  <td className="col-color">
+                    {isEditing ? (
+                      <input
+                        type="color"
+                        value={editing.color}
+                        onChange={(e) => setEditing({ id: tag.id, color: e.target.value })}
+                        aria-label={`Color for the ${tag.name} tag`}
+                      />
+                    ) : (
+                      <>
+                        <span className="swatch" style={{ background: tag.color }} aria-hidden="true" />
+                        <span className="hex">{tag.color}</span>
+                      </>
+                    )}
+                  </td>
+                  <td className="col-uses">
+                    {linkToTag(tag) ? (
+                      <Link to={linkToTag(tag)} title={`Search the entries tagged ${tag.name}`}>
+                        {tag.uses}<span className="uses-word"> {tag.uses === 1 ? 'entry' : 'entries'}</span>
+                      </Link>
+                    ) : (
+                      <>{tag.uses}<span className="uses-word"> {tag.uses === 1 ? 'entry' : 'entries'}</span></>
+                    )}
+                  </td>
+                  <td className="col-actions">
+                    <div className="tag-actions">
+                      {isEditing ? (
+                        <>
+                          <button type="button" onClick={saveColor}>Save</button>
+                          <button type="button" className="secondary" onClick={() => setEditing(null)}>Cancel</button>
+                        </>
+                      ) : (
+                        <>
+                          <button type="button" className="secondary" onClick={() => setEditing({ id: tag.id, color: tag.color })} aria-label={`Edit the color of the ${tag.name} tag`}>Edit Color</button>
+                          <button type="button" className="secondary btn-delete" onClick={() => deleteTag(tag)} aria-label={`Delete the ${tag.name} tag`}>Delete</button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
