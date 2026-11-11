@@ -3,6 +3,17 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.11.4] - 2026-11-11
+
+### Security
+- Updated supporting packages to their latest patch releases: the server's cookie, rate-limit, static-file and API-docs packages and its ID generator, plus React, React Router and the Vite build tools.
+- Cleared advisories in three packages used behind the scenes: DOMPurify inside the editor, the URL parser used by the server, and a helper used when cleaning entry text.
+
+### Upgrading from 0.11.3
+- Your data is kept. No database changes.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.11.3] - 2026-10-08
 
 ### Fixed
