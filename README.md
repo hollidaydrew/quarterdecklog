@@ -1,30 +1,57 @@
-# QuarterDeckLog
+<p align="center">
+  <a href="https://quarterdecklog.com"><img src="docs/images/readme-hero.png" alt="QuarterDeckLog: the watch log for your team. Free and open source, self-hosted, MIT licensed." width="100%"></a>
+</p>
 
-A self-hosted, shared digital logbook for teams — inspired by the paper quarterdeck watch log used aboard Navy ships. Log what happened, day by day, so the next person on shift can catch up in a minute instead of digging through chat history.
+<p align="center">
+  <a href="https://quarterdecklog.com"><b>Website</b></a> &nbsp;·&nbsp;
+  <a href="#quick-start"><b>Quick start</b></a> &nbsp;·&nbsp;
+  <a href="#api"><b>API</b></a> &nbsp;·&nbsp;
+  <a href="CHANGELOG.md"><b>Changelog</b></a> &nbsp;·&nbsp;
+  <a href="#security-notes"><b>Security</b></a>
+</p>
 
-Click a day on the calendar, see everything that was logged. Write entries in a rich-text editor, tag them (bug, incident, FYI, whatever your team needs), and hand off cleanly.
+QuarterDeckLog is a shared, day-by-day logbook you run on your own server. Write down what happened, and the next person on shift can catch up in a minute instead of digging through chat history.
 
-## Features
+Made for IT, Operations, Facilities, Labs, Front Desks, and anyone who works in shifts and needs a clean handoff. The idea comes from the paper quarterdeck watch log kept aboard U.S. Navy ships.
 
-**Logging**
+<p align="center">
+  <img src="docs/images/readme-app.png" alt="QuarterDeckLog's Calendar view: a November calendar beside the entries for Thursday, November 12, with pinned notes and a since-your-last-sign-in note" width="100%">
+</p>
+
+## Log it. Hand it off. Find it later.
+
+<p align="center">
+  <img src="docs/images/readme-features.png" alt="Three panels: the entry editor with tags, the handoff view with pinned notes, and search results with highlighted matches" width="100%">
+</p>
+
+### Log it
+One shared log, one day at a time. Everyone writes to the same timeline. Pick a day, write an entry and tag it.
+
 - One shared team log: everyone sees the same timeline, and every entry shows who wrote it and when
 - Rich-text entry editor (bold, italic, strikethrough, links, heading, quotes, code, lists)
 - Admin-managed, color-coded tags; click tags above a day's entries to filter them
 - Only an entry's author, or an admin, can edit or delete it
 
-**Reading and handing off**
+### Hand it off
+Handoffs that take a minute. When you sign in, QuarterDeckLog tells you what changed while you were away, and standing orders stay pinned where everyone sees them.
+
 - Each entry shows who wrote it and when, when it was edited, and a "Late entry" label if it was written on a later day than it belongs to
 - Pinned notes (up to 5) stay at the top of the day, List and Calendar pages; a copy icon copies an entry as plain text
 - After signing in, a note lists what other people added since your last sign-in
 
-**Finding things**
+### Find it later
+Search across every entry, filter by date, tag or person, and turn a date range into a printable report.
+
 - List view: a scrolling list of dates with the selected day's entries beside it, a single-day or date-range filter, an "Entries" check box that hides empty days, and one-click Year / Q1 to Q4 buttons
 - Calendar view: click a day, see that day's entries, newest first
 - Search: its own page with filters for dates, tags and person. Words match from the start of a word, "quotes" for exact phrases, -word to leave one out, matched words highlighted, and results can be printed or exported like the Rollup
 - Rollup: every entry in a date range on one page, with Print and Export
 - Rollup and Search share one Filters panel and results layout (tag, user and date filters; print and export follow the filters)
 
-**Running it**
+## Small to run. Serious about your data.
+
+QuarterDeckLog is one Docker container and one SQLite file. The admin tools cover what a small team needs and nothing it doesn't.
+
 - Invite-link onboarding; there is no public signup
 - Admin tools: tags, invites, team members (edit, reset password, delete, last login), API keys, security and data
 - Optional two-step sign-in (admin controlled): authenticator-app codes (Microsoft Authenticator, Google Authenticator and similar), trusted for 7 days per device, up to 5 devices each, recovery codes, and an emergency off switch
@@ -143,8 +170,8 @@ If you find a security issue, please open a private security advisory on GitHub 
 ## Known limitations
 
 - Sessions are stored in memory — restarting the container logs everyone out. Fine for a small team; a persistent session store can be added later if needed.
-- No file/image attachments on entries yet (text and formatting only).
-- No email notifications — this is a "pull" tool, not a "push" one, by design.
+- No file or image attachments, by design. Entries are text with formatting, which keeps each instance small, fast and nimble.
+- No email notifications, also by design: this is a "pull" tool, not a "push" one. To show entries in other tools, use the [API](#api).
 
 ## Tech stack
 
@@ -168,3 +195,7 @@ If you find a security issue, please open a private security advisory on GitHub 
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+<p align="center"><sub>Crafted with ❤️ in Littleton, Colorado. Dedicated to my shipmates of USS MAHAN (DDG-72).<br>QuarterDeckLog is an independent open-source project created by a Veteran and is not affiliated with or endorsed by the United States Navy or the United States Government.</sub></p>
