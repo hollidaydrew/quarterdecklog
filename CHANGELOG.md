@@ -3,6 +3,16 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.11.6] - 2026-11-17
+
+### Security
+- Updated supporting packages to their latest patch releases: the server's session, static-file and API-docs packages, the password-hashing library and the database driver.
+
+### Upgrading from 0.11.5
+- Your data is kept. No database changes.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`.
+- Everyone is signed out once, when the container restarts.
+
 ## [0.11.5] - 2026-11-17
 
 ### Fixed
