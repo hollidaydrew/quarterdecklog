@@ -62,7 +62,9 @@ await fastify.register(cookie);
 await fastify.register(session, {
   secret: SESSION_SECRET,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    // Secure when the request arrived over HTTPS (directly or through a proxy,
+    // since trustProxy is on); plain HTTP such as http://localhost still works.
+    secure: 'auto',
     httpOnly: true,
     sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
