@@ -144,7 +144,7 @@ Entries written through the API belong to the built-in user **System**. A key ca
 
 ## Reverse proxy / HTTPS
 
-QuarterDeckLog itself only serves plain HTTP on port 7272 inside the container. For real deployments, put it behind a reverse proxy or tunnel (Caddy, Nginx, Cloudflare Tunnel, etc.) that terminates TLS. Session cookies are marked `secure` in production, so the app must be accessed over HTTPS in a real deployment or logins won't persist.
+QuarterDeckLog itself only serves plain HTTP on port 7272 inside the container. For real deployments, put it behind a reverse proxy or tunnel (Caddy, Nginx, Cloudflare Tunnel, etc.) that terminates TLS. Sign-in cookies are marked `secure` whenever a request arrives over HTTPS (the proxy's `X-Forwarded-Proto` header counts), and plain HTTP such as `http://localhost:7272` works for trying it out. Use HTTPS for anything beyond your own machine, so passwords and sign-in cookies are never sent in the clear.
 
 ## Security notes
 

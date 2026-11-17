@@ -3,6 +3,17 @@
 All notable changes to QuarterDeckLog are listed here, newest first. The app
 shows this list when you click the version number in the footer.
 
+## [0.11.5] - 2026-11-17
+
+### Fixed
+- Signing in now works when the app is opened over plain HTTP, such as `http://localhost:7272` right after installing. Before, you were sent straight back to the sign-in screen. Over HTTPS nothing changes.
+
+### Upgrading from 0.11.4
+- Your data is kept. No database changes.
+- Rebuild with `docker compose build --pull` and then `docker compose up -d`.
+- Everyone is signed out once, when the container restarts.
+- If you added a `docker-compose.override.yml` that sets `NODE_ENV=development` to work around this, you can remove it.
+
 ## [0.11.4] - 2026-11-11
 
 ### Security

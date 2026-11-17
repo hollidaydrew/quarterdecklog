@@ -50,7 +50,7 @@ function pendingUser(request, kind) {
 function setDeviceCookie(reply, token) {
   reply.setCookie(DEVICE_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: reply.request.protocol === 'https',
     sameSite: 'lax',
     path: '/',
     maxAge: TRUST_DAYS * 86400,
